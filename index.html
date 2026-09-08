@@ -1732,6 +1732,61 @@ body {
   vertical-align: middle;
 }
 
+/* ===== Leo 说话气泡 ===== */
+.leo-talk-bubble {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 3px solid var(--orange);
+  border-radius: 18px;
+  padding: 10px 14px;
+  min-width: 120px;
+  max-width: 220px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  z-index: 50;
+  animation: bubblePop 0.3s ease;
+  text-align: center;
+}
+@keyframes bubblePop {
+  0% { transform: translateX(-50%) scale(0.6); opacity: 0; }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+.leo-talk-bubble .bubble-tri {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: var(--orange);
+}
+.leo-talk-bubble .bubble-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+}
+.leo-talk-bubble .bubble-mouth {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  margin-top: 6px;
+}
+.leo-talk-bubble .bubble-mouth span {
+  width: 5px;
+  height: 5px;
+  background: var(--orange);
+  border-radius: 50%;
+  animation: mouthDot 0.5s ease-in-out infinite;
+}
+.leo-talk-bubble .bubble-mouth span:nth-child(2) { animation-delay: 0.15s; }
+.leo-talk-bubble .bubble-mouth span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes mouthDot {
+  0%, 100% { transform: scale(0.6); opacity: 0.5; }
+  50% { transform: scale(1.3); opacity: 1; }
+}
+
 /* ===== 启动欢迎页 ===== */
 #splash-screen {
   position: fixed;
@@ -3002,6 +3057,122 @@ function playLineSing(notesStr, cb) {
   melodyTimers.push(timer);
 }
 
+// ===== 唱歌词：歌词单词按旋律节拍唱出（真正的"唱"，有旋律有节奏）=====
+// 简单音节元音映射：单词 -> 其核心元音的 formant
+var SING_VOWEL = {
+  'a':  { f1: 660, f2: 1720 }, 'e': { f1: 530, f2: 1840 },
+  'i':  { f1: 390, f2: 1990 }, 'o': { f1: 570, f2: 840 },
+  'u':  { f1: 440, f2: 1020 }, 'ə': { f1: 500, f2: 1500 }
+};
+function wordVowelFmts(word) {
+  // 取单词里第一个响亮元音字母
+  var w = word.toLowerCase().replace(/[^a-z]/g, '');
+  if (!w) return SING_VOWEL['ə'];
+  var m = w.match(/[aeiou]/);
+  if (!m) return SING_VOWEL['ə'];
+  var c = m[0];
+  // 常见组合优化
+  if (w.indexOf('ee') !== -1 || w.indexOf('ea') !== -1) return SING_VOWEL['i'];
+  if (w.indexOf('oo') !== -1) return SING_VOWEL['u'];
+  if (w.indexOf('ou') !== -1 || w.indexOf('ow') !== -1) return SING_VOWEL['a'];
+  if (w.indexOf('ai') !== -1 || w.indexOf('ay') !== -1) return SING_VOWEL['e'];
+  if (w.indexOf('oa') !== -1) return SING_VOWEL['o'];
+  return SING_VOWEL[c] || SING_VOWEL['ə'];
+}
+
+// 唱一个单词（用该词元音口型 + 旋律音高）
+function singWord(freq, startTime, dur, vol, word) {
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var t = startTime;
+  var fmts = wordVowelFmts(word);
+  var master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  // 基频 + 该单词元音的共振峰（近似人声唱词）
+  var comps = [
+    [freq, 0.42],
+    [freq * 1.2, 0.18],
+    [freq * 1.5, 0.12]
+  ];
+  // 用 formant 偏移模拟不同元音
+  var f1r = fmts.f1 / 660, f2r = fmts.f2 / 1720;
+  comps.forEach(function(pp, idx) {
+    var o = ctx.createOscillator();
+    o.type = 'sine';
+    var base = pp[0];
+    if (idx === 1) base = freq * (0.8 + 0.6 * f1r);
+    if (idx === 2) base = freq * (1.2 + 0.9 * f2r);
+    o.frequency.value = base;
+    var g = ctx.createGain();
+    g.gain.value = pp[1];
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t + dur + 0.05);
+  });
+  master.gain.setValueAtTime(0, t);
+  master.gain.linearRampToValueAtTime(vol, t + 0.03);
+  master.gain.setValueAtTime(vol * 0.9, t + dur - 0.1);
+  master.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  melodyNodes.push(master);
+}
+
+// 唱一行歌词：单词对齐旋律音符（每词一个音符，长词占多音符）
+function singLyricLine(line, notesStr, onWord, cb) {
+  var ctx = ensureAudio();
+  if (!ctx) { if (cb) cb(); return; }
+  var words = line.replace(/[^\w\s']/g, '').trim().split(/\s+/).filter(Boolean);
+  var notes = notesStr.trim().split(/\s+/);
+  var BEAT = 0.36;
+  var t = ctx.currentTime + 0.08;
+  var totalBeats = 0;
+  notes.forEach(function(n) {
+    var parts = n.split(':');
+    totalBeats += parseInt(parts[1]) || 1;
+  });
+  // 把音符分配给单词：总音符数/单词数，每词至少1个
+  var wordNotes = [];
+  var wi = 0;
+  for (var i = 0; i < notes.length; i++) {
+    if (!wordNotes[wi]) wordNotes[wi] = [];
+    wordNotes[wi].push(notes[i]);
+    // 按比例分配：单词少的词多给音符
+    var avg = notes.length / words.length;
+    if (wordNotes[wi].length >= Math.max(1, Math.round(avg)) && wi < words.length - 1) wi++;
+  }
+  if (wordNotes.length > words.length) wordNotes = wordNotes.slice(0, words.length);
+  var wordIdx = 0;
+  words.forEach(function(word, wii) {
+    var nGroup = wordNotes[wii] || [];
+    if (!nGroup.length) return;
+    var groupDur = 0;
+    nGroup.forEach(function(n) {
+      var parts = n.split(':');
+      groupDur += BEAT * (parseInt(parts[1]) || 1);
+    });
+    var start = t;
+    // 该词内每个音符唱一次
+    var acc = 0;
+    nGroup.forEach(function(n) {
+      var parts = n.split(':');
+      var freq = NOTE_FREQ[parts[0]];
+      var mult = parseInt(parts[1]) || 1;
+      if (!freq) { acc += BEAT * mult; return; }
+      var dur = BEAT * mult * 0.96;
+      singWord(freq, start + acc, dur, 0.16, word);
+      playNote(freq, start + acc, dur, 0.04);
+      acc += BEAT * mult;
+    });
+    t += groupDur;
+    if (onWord) onWord(wii);
+  });
+  var totalMs = (t - ctx.currentTime - 0.08) * 1000;
+  var timer = setTimeout(function() {
+    melodyTimers = melodyTimers.filter(function(x) { return x !== timer; });
+    if (cb) cb();
+  }, totalMs + 100);
+  melodyTimers.push(timer);
+}
+
 function estimateMelodyMs(notesStr) {
   if (!notesStr) return 0;
   var BEAT = 360;
@@ -3394,6 +3565,76 @@ function speakCheer(text) {
   return speakZh(lead + text);
 }
 
+// ===== 情绪化说话引擎：拆短句+动态音高语速，模拟真人抑扬顿挫 =====
+// segments: 字符串数组或 [{t:文本, r:语速, p:音高, d:停顿ms}]
+var emoSpeaking = false;
+var emoCanceled = false;
+function speakEmo(textOrSegs, opts) {
+  opts = opts || {};
+  if (!('speechSynthesis' in window)) return;
+  var segs;
+  if (typeof textOrSegs === 'string') {
+    // 自动按标点拆句
+    var raw = textOrSegs.replace(/([。！？!?，,])/g, '$1|').split('|').filter(function(x){return x.trim();});
+    segs = raw.map(function(s) { return { t: s.trim(), r: opts.rate || 0.85, p: opts.pitch || 1.05, d: 90 }; });
+    // 制造起伏：首句稍慢、中句正常、末句活泼
+    segs.forEach(function(s, i) {
+      if (i === 0) { s.r = (opts.rate || 0.8); s.p = 1.0; }
+      else if (i === segs.length - 1) { s.r = (opts.rate || 0.9) + 0.08; s.p = 1.25; }
+      else { s.r = (opts.rate || 0.85); s.p = 1.05 + (i % 2) * 0.15; }
+    });
+  } else {
+    segs = textOrSegs.slice();
+  }
+  emoCanceled = false;
+  emoSpeaking = true;
+  var idx = 0;
+  var isZh = opts.lang && opts.lang.indexOf('zh') !== -1;
+  function playNext() {
+    if (emoCanceled) { emoSpeaking = false; return; }
+    if (idx >= segs.length) { emoSpeaking = false; return; }
+    var seg = segs[idx];
+    idx++;
+    var u = speak(seg.t, { lang: opts.lang || 'zh-CN', rate: seg.r, pitch: seg.p, volume: opts.volume || 1 });
+    var delay = (seg.d || 80);
+    if (u && u.onend !== undefined) {
+      u.onend = function() { setTimeout(playNext, delay); };
+    } else {
+      setTimeout(playNext, Math.max(delay, 500 + seg.t.length * 90));
+    }
+    // 兜底推进
+    setTimeout(function() { if (idx <= segs.length && !emoCanceled) { emoSpeaking = false; playNext(); } }, 2600);
+  }
+  playNext();
+}
+function stopEmo() {
+  emoCanceled = true;
+  emoSpeaking = false;
+  window.speechSynthesis && window.speechSynthesis.cancel();
+}
+
+// ===== Leo 说话动画：头像旁弹出语音气泡+嘴巴动 =====
+var leoTalkTimer = null;
+function leoTalk(anchorId, text, ms) {
+  var anchor = document.getElementById(anchorId);
+  // 锚点不存在时，挂到首页 Leo 头像的固定位置（左上方）
+  if (!anchor) {
+    var av = document.querySelector('.mascot-avatar');
+    if (av) anchor = av;
+  }
+  if (!anchor) return;
+  var bubble = document.createElement('div');
+  bubble.className = 'leo-talk-bubble';
+  bubble.innerHTML = '<div class="bubble-tri"></div>' +
+    '<div class="bubble-text">' + text + '</div>' +
+    '<div class="bubble-mouth"><span></span><span></span><span></span></div>';
+  anchor.appendChild(bubble);
+  var dur = ms || 1800;
+  leoTalkTimer = setTimeout(function() {
+    if (bubble.parentNode) bubble.parentNode.removeChild(bubble);
+  }, dur);
+}
+
 function speakZh(text) {
   return speak(text, { lang: 'zh-CN', rate: 0.95, pitch: 1.1 });
 }
@@ -3678,7 +3919,9 @@ function renderHome(app) {
   });
   document.getElementById('mascotTap').addEventListener('click', function() {
     sfxClick();
-    speakZh(randomItem(LEO_CHAT));
+    var msg = randomItem(LEO_CHAT);
+    speakEmo(msg, { lang: 'zh-CN', rate: 0.9 });
+    leoTalk('mascotTap', msg, 2200);
   });
   document.getElementById('voiceBtn').addEventListener('click', startVoiceCustom);
   document.getElementById('voiceBtn').addEventListener('touchstart', function(e) { e.preventDefault(); }, { passive: false });
@@ -5511,9 +5754,9 @@ function playSingleLine(idx) {
   var line = currentSong.lines[idx];
   var melody = currentSong.melody ? currentSong.melody[idx] : null;
   if (melody) {
-    // 先唱旋律（合成人声），再慢速念词跟学
-    playLineSing(melody, function() {
-      setTimeout(function() { speak(line, { rate: 0.62, pitch: 1.08 }); }, 200);
+    // 唱这句歌词（单词跟着旋律唱），唱完再慢速带读
+    singLyricLine(line, melody, null, function() {
+      setTimeout(function() { speak(line, { rate: 0.62, pitch: 1.08 }); }, 250);
     });
   } else {
     speak(line, { rate: 0.7, pitch: 1.1 });
@@ -5541,13 +5784,13 @@ function playSongLines(startIdx) {
     if (pending <= 0) {
       finished = true;
       if (!songStopRequested) {
-        setTimeout(function() { playSongLines(startIdx + 1); }, 650);
+        setTimeout(function() { playSongLines(startIdx + 1); }, 500);
       }
     }
   }
   if (melody) {
     pending++;
-    playLineSing(melody, function() {
+    singLyricLine(line, melody, null, function() {
       // 唱完一句后，用温柔的声音带读歌词
       if (!songStopRequested) {
         speak(line, { rate: 0.62, pitch: 1.08 });
@@ -5762,11 +6005,19 @@ document.getElementById('splashStart').addEventListener('click', function() {
   var splash = document.getElementById('splash-screen');
   splash.classList.add('hidden');
   setTimeout(function() { splash.style.display = 'none'; }, 500);
-  // 欢迎语音
+  // 欢迎语音（情绪化：有起伏、有停顿、配 Leo 气泡动画）
   setTimeout(function() {
     var hour = new Date().getHours();
     var greet = hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
-    speakZh(greet + '，小朋友！我是 Leo，今天也要开心学英语哦！');
+    speakEmo([
+      { t: greet + '，小朋友！', r: 0.78, p: 1.05, d: 200 },
+      { t: '我是 Leo！', r: 0.85, p: 1.15, d: 150 },
+      { t: '今天也要开心学英语哦！', r: 0.92, p: 1.3, d: 0 }
+    ], { lang: 'zh-CN' });
+    setTimeout(function() {
+      // 首页已渲染，气泡挂在 Leo 头像上
+      leoTalk('mascotTap', greet + '，小朋友！', 2400);
+    }, 300);
   }, 300);
 });
 
