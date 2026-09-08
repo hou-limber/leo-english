@@ -1,9 +1,13 @@
 // Leo英语小乐园 Service Worker
-const CACHE_NAME = 'leo-english-v1';
+const CACHE_NAME = 'leo-english-v2';
 const ASSETS = [
   './index.html',
   './manifest.json',
-  './icon.png'
+  './icon.png',
+  './audio/twinkle.mp3',
+  './audio/headshoulders.mp3',
+  './audio/happy.mp3',
+  './audio/oldmacdonald.mp3'
 ];
 
 self.addEventListener('install', function(e) {

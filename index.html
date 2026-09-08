@@ -2822,6 +2822,7 @@ const SONGS = [
     titleZh: "小星星",
     color: "#5B9DFB",
     icon: "star",
+    mp3: "audio/twinkle.mp3",
     lines: [
       "Twinkle, twinkle, little star,",
       "How I wonder what you are!",
@@ -2845,6 +2846,7 @@ const SONGS = [
     titleZh: "头肩膀膝盖脚",
     color: "#4ECDC4",
     icon: "body",
+    mp3: "audio/headshoulders.mp3",
     lines: [
       "Head, shoulders, knees and toes,",
       "Knees and toes!",
@@ -2870,6 +2872,7 @@ const SONGS = [
     titleZh: "幸福拍手歌",
     color: "#FF6B9D",
     icon: "clap",
+    mp3: "audio/happy.mp3",
     lines: [
       "If you're happy and you know it, clap your hands!",
       "If you're happy and you know it, clap your hands!",
@@ -2892,30 +2895,25 @@ const SONGS = [
     ]
   },
   {
-    id: "fivelittleducks",
-    title: "Five Little Ducks",
-    titleZh: "五只小鸭子",
-    color: "#FFB800",
-    icon: "duck",
+    id: "oldmacdonald",
+    title: "Old MacDonald Had a Farm",
+    titleZh: "老麦克唐纳的农场",
+    color: "#6BCB77",
+    icon: "farm",
+    mp3: "audio/oldmacdonald.mp3",
     lines: [
-      "Five little ducks went out one day,",
-      "Over the hills and far away.",
-      "Mother duck said, \"Quack, quack, quack, quack!\"",
-      "But only four little ducks came back.",
-      "Four little ducks went out one day,",
-      "Over the hills and far away.",
-      "Mother duck said, \"Quack, quack, quack, quack!\"",
-      "But only three little ducks came back."
+      "Old MacDonald had a farm, E-I-E-I-O!",
+      "And on his farm he had a cow, E-I-E-I-O!",
+      "With a moo-moo here, and a moo-moo there,",
+      "Here a moo, there a moo, everywhere a moo-moo,",
+      "Old MacDonald had a farm, E-I-E-I-O!"
     ],
     melody: [
-      "C4 C4 C4 D4 E4 E4:2",
-      "D4 D4 D4 E4 F4 F4:2",
-      "E4 E4 E4 F4 G4 G4:2",
-      "E4 D4 C4:2",
-      "C4 C4 C4 D4 E4 E4:2",
-      "D4 D4 D4 E4 F4 F4:2",
-      "E4 E4 E4 F4 G4 G4:2",
-      "E4 D4 C4:2"
+      "G4 G4 G4 D4 E4 E4 D4:2",
+      "G4 G4 G4 D4 E4 E4 D4:2",
+      "G4 G4 G4 D4 E4 E4 D4:2",
+      "C4 C4 D4 D4 E4 E4 D4:2",
+      "G4 G4 G4 D4 E4 E4 D4:2"
     ]
   }
 ];
@@ -3185,6 +3183,7 @@ function estimateMelodyMs(notesStr) {
   return total;
 }
 
+var songAudio = null;
 function stopMelody() {
   songStopRequested = true;
   melodyTimers.forEach(clearTimeout);
@@ -3194,6 +3193,9 @@ function stopMelody() {
     try { n.disconnect(); } catch (e) {}
   });
   melodyNodes = [];
+  if (songAudio) {
+    try { songAudio.pause(); songAudio.currentTime = 0; } catch(e) {}
+  }
 }
 
 // 短促音效（点击/奖励反馈）
@@ -5690,7 +5692,10 @@ function renderSongDetail(app) {
     '</div>' +
     '<div style="padding:0 20px;display:flex;gap:10px;margin-bottom:16px">' +
       '<button class="btn btn-primary" id="playAllBtn" style="flex:1;font-size:17px;padding:14px">' +
-        '<svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg> 整首播放' +
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg> 原唱' +
+      '</button>' +
+      '<button class="btn btn-secondary" id="singAlongBtn" style="flex:1;font-size:17px;padding:14px">' +
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> 跟唱' +
       '</button>' +
       '<button class="btn btn-secondary" id="stopBtn" style="padding:14px 20px">' +
         '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>' +
@@ -5715,7 +5720,13 @@ function renderSongDetail(app) {
     stopMelody();
     songStopRequested = false;
     window.speechSynthesis && window.speechSynthesis.cancel();
-    playSongLines(0);
+    playSongLines(0); // 原唱模式（有MP3时自动用真人演唱）
+  });
+  document.getElementById('singAlongBtn').addEventListener('click', function() {
+    stopMelody();
+    songStopRequested = false;
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    playSongLinesSynth(0); // 跟唱模式（合成器逐句唱+带读）
   });
   document.getElementById('stopBtn').addEventListener('click', function() {
     songStopRequested = true;
@@ -5769,6 +5780,60 @@ function playSongLines(startIdx) {
     return;
   }
   if (songStopRequested) return;
+
+  // ===== 真人演唱模式：有 MP3 时直接播放真人演唱 =====
+  if (currentSong.mp3 && startIdx === 0) {
+    clearSongHighlights();
+    if (songAudio) { try { songAudio.pause(); } catch(e) {} }
+    songAudio = new Audio(currentSong.mp3);
+    songAudio.volume = 0.9;
+    var totalLines = currentSong.lines.length;
+    songAudio.addEventListener('loadedmetadata', function() {
+      if (songStopRequested) return;
+      var dur = songAudio.duration;
+      // 按歌词行数平均分配时间，逐行高亮
+      var perLine = dur / totalLines;
+      for (var i = 0; i < totalLines; i++) {
+        (function(idx) {
+          var t = setTimeout(function() {
+            if (songStopRequested) return;
+            clearSongHighlights();
+            var el = document.getElementById('songLine' + idx);
+            if (el) el.classList.add('active');
+          }, idx * perLine * 1000);
+          melodyTimers.push(t);
+        })(i);
+      }
+    });
+    songAudio.addEventListener('ended', function() {
+      clearSongHighlights();
+      songStopRequested = false;
+    });
+    songAudio.addEventListener('error', function() {
+      // MP3 加载失败，回退到合成器跟唱
+      clearSongHighlights();
+      songStopRequested = false;
+      playSongLinesSynth(0);
+    });
+    songAudio.play().catch(function() {
+      // 自动播放被阻止，回退
+      clearSongHighlights();
+      songStopRequested = false;
+      playSongLinesSynth(0);
+    });
+    return;
+  }
+
+  playSongLinesSynth(startIdx);
+}
+
+// 合成器跟唱模式（无 MP3 或单行播放时使用）
+function playSongLinesSynth(startIdx) {
+  if (!currentSong || startIdx >= currentSong.lines.length) {
+    clearSongHighlights();
+    return;
+  }
+  if (songStopRequested) return;
   clearSongHighlights();
   songPlayingLine = startIdx;
   var el = document.getElementById('songLine' + startIdx);
@@ -5784,14 +5849,13 @@ function playSongLines(startIdx) {
     if (pending <= 0) {
       finished = true;
       if (!songStopRequested) {
-        setTimeout(function() { playSongLines(startIdx + 1); }, 500);
+        setTimeout(function() { playSongLinesSynth(startIdx + 1); }, 500);
       }
     }
   }
   if (melody) {
     pending++;
     singLyricLine(line, melody, null, function() {
-      // 唱完一句后，用温柔的声音带读歌词
       if (!songStopRequested) {
         speak(line, { rate: 0.62, pitch: 1.08 });
       }
