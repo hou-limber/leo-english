@@ -2165,6 +2165,113 @@ body {
   border-radius: 5px;
   transition: width 0.5s ease;
 }
+/* 更多例词 chips */
+.phoneme-detail .extra-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: -4px 0 14px;
+}
+.phoneme-detail .extra-word-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 2px solid var(--bg-soft);
+  border-radius: 999px;
+  padding: 6px 12px 6px 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.phoneme-detail .extra-word-chip:active {
+  transform: scale(0.92);
+  background: var(--bg-soft);
+}
+.phoneme-detail .extra-word-chip .ew-zh {
+  font-size: 11px;
+  color: var(--text-light);
+  font-weight: 600;
+}
+.phoneme-detail .extra-word-chip.playing {
+  border-color: var(--green);
+  background: #f0fdf4;
+}
+/* 辨音挑战 */
+.phoneme-detail .quiz-block {
+  background: linear-gradient(135deg, #fdf6ec, #fef9ef);
+  border: 2px dashed #F5C97B;
+  border-radius: 18px;
+  padding: 14px 14px 16px;
+  margin: 0 0 14px;
+  text-align: center;
+}
+.phoneme-detail .quiz-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #B7791F;
+}
+.phoneme-detail .quiz-desc {
+  font-size: 12px;
+  color: #A07C3C;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.phoneme-detail .quiz-options {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+.phoneme-detail .quiz-opt {
+  width: 86px;
+  height: 66px;
+  border-radius: 16px;
+  background: #fff;
+  border: 3px solid #ddd;
+  font-size: 26px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.phoneme-detail .quiz-opt:active {
+  transform: scale(0.9);
+}
+.phoneme-detail .quiz-opt.shake {
+  animation: quizShake 0.4s ease;
+  border-color: #E74C3C !important;
+  color: #E74C3C !important;
+}
+@keyframes quizShake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-4px); }
+}
+.phoneme-detail .quiz-ok {
+  background: #f0fdf4;
+  border: 2px solid var(--green);
+  color: var(--green);
+  border-radius: 12px;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  margin-top: 10px;
+  animation: popIn 0.3s ease;
+}
+.phoneme-detail .quiz-no {
+  color: #E74C3C;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+@keyframes popIn {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
 </style>
 </head>
 <body>
@@ -2502,6 +2609,103 @@ Object.keys(PHONEMES).forEach(function(cat) {
   });
 });
 
+// ===== 音标本尊发音（AI真人配音，点击音标播放这个音本身）=====
+var PHONEME_SOUND_MAP = {
+  "æ":"https://aka.doubaocdn.com/s/1rVzf4jwNX",
+  "e":"https://aka.doubaocdn.com/s/d9xGiHF1ow",
+  "ɪ":"https://aka.doubaocdn.com/s/DGVZnSfVJq",
+  "ʌ":"https://aka.doubaocdn.com/s/e967wcwkDW",
+  "ʊ":"https://aka.doubaocdn.com/s/PUDl42Qd6r",
+  "ə":"https://aka.doubaocdn.com/s/Swnb5ioqNY",
+  "iː":"https://aka.doubaocdn.com/s/fF96Ck3opC",
+  "ɑː":"https://aka.doubaocdn.com/s/7Dy5Rbh6mp",
+  "ɔː":"https://aka.doubaocdn.com/s/HpPrIuakiH",
+  "uː":"https://aka.doubaocdn.com/s/HUG5paQbVs",
+  "ɜːr":"https://aka.doubaocdn.com/s/jAuhI8303y",
+  "ɚ":"https://aka.doubaocdn.com/s/YYW8ottLkK",
+  "eɪ":"https://aka.doubaocdn.com/s/LZvUqsLIHz",
+  "aɪ":"https://aka.doubaocdn.com/s/nm9Ccm9m2q",
+  "aʊ":"https://aka.doubaocdn.com/s/cVUlLuTD6d",
+  "oʊ":"https://aka.doubaocdn.com/s/pdzUXAjdM5",
+  "ɔɪ":"https://aka.doubaocdn.com/s/LJRL5jTSmQ",
+  "juː":"https://aka.doubaocdn.com/s/TxISofDRUa",
+  "p":"https://aka.doubaocdn.com/s/Q5PnfeENnY",
+  "b":"https://aka.doubaocdn.com/s/H8nx5WZ3nO",
+  "t":"https://aka.doubaocdn.com/s/0a0wy1c2u6",
+  "d":"https://aka.doubaocdn.com/s/ISVkeve0Hg",
+  "k":"https://aka.doubaocdn.com/s/wUurRMY8Uk",
+  "g":"https://aka.doubaocdn.com/s/WhTtmsOpXy",
+  "f":"https://aka.doubaocdn.com/s/6vKXFUTBwm",
+  "v":"https://aka.doubaocdn.com/s/EipU6iWamK",
+  "θ":"https://aka.doubaocdn.com/s/pRoy4J7cnL",
+  "ð":"https://aka.doubaocdn.com/s/xwp3B5nJ8G",
+  "s":"https://aka.doubaocdn.com/s/lYpwOvl0t2",
+  "z":"https://aka.doubaocdn.com/s/QVq836BYIf",
+  "ʃ":"https://aka.doubaocdn.com/s/5wanyYtOAs",
+  "ʒ":"https://aka.doubaocdn.com/s/YUmGWYzUFt",
+  "h":"https://aka.doubaocdn.com/s/W1xmgxnMX8",
+  "m":"https://aka.doubaocdn.com/s/QLfE9nhBgE",
+  "n":"https://aka.doubaocdn.com/s/m9YZQGjZdq",
+  "ŋ":"https://aka.doubaocdn.com/s/Ay5d8YPZ4W",
+  "l":"https://aka.doubaocdn.com/s/bq0obYVjW7",
+  "r":"https://aka.doubaocdn.com/s/lZHONluRVf",
+  "w":"https://aka.doubaocdn.com/s/laftiDNyhw",
+  "j":"https://aka.doubaocdn.com/s/esVbmbOGca",
+  "tʃ":"https://aka.doubaocdn.com/s/VGFtS1kY9L",
+  "dʒ":"https://aka.doubaocdn.com/s/uwCBZfjnix"
+};
+Object.keys(PHONEMES).forEach(function(cat) {
+  PHONEMES[cat].forEach(function(p) {
+    if (PHONEME_SOUND_MAP[p.ipa]) p.sound = PHONEME_SOUND_MAP[p.ipa];
+  });
+});
+
+// ===== 音标更多例词 + 辨音挑战混淆对 =====
+var PHONEME_EXTRA = {
+  "æ": { words: [{w:"cat",zh:"猫"},{w:"black",zh:"黑色"}], conf: ["e","ʌ"] },
+  "e": { words: [{w:"red",zh:"红色"},{w:"ten",zh:"十"}], conf: ["æ","eɪ"] },
+  "ɪ": { words: [{w:"fish",zh:"鱼"},{w:"six",zh:"六"}], conf: ["iː","e"] },
+  "ʌ": { words: [{w:"monkey",zh:"猴子"},{w:"bus",zh:"公交车"}], conf: ["æ","ɑː"] },
+  "ʊ": { words: [{w:"book",zh:"书"},{w:"look",zh:"看"}], conf: ["uː","oʊ"] },
+  "ə": { words: [{w:"banana",zh:"香蕉"}], conf: ["ʌ","e"] },
+  "iː": { words: [{w:"green",zh:"绿色"},{w:"three",zh:"三"}], conf: ["ɪ","eɪ"] },
+  "ɑː": { words: [{w:"star",zh:"星星"},{w:"car",zh:"小汽车"}], conf: ["ʌ","aʊ"] },
+  "ɔː": { words: [{w:"four",zh:"四"},{w:"horse",zh:"马"}], conf: ["oʊ","ʌ"] },
+  "uː": { words: [{w:"blue",zh:"蓝色"},{w:"two",zh:"二"}], conf: ["ʊ","juː"] },
+  "ɜːr": { words: [{w:"bird",zh:"鸟"},{w:"girl",zh:"女孩"}], conf: ["ɑː","ɔː"] },
+  "ɚ": { words: [{w:"sister",zh:"姐妹"},{w:"teacher",zh:"老师"}], conf: ["ɜːr","ə"] },
+  "eɪ": { words: [{w:"cake",zh:"蛋糕"},{w:"eight",zh:"八"}], conf: ["aɪ","e"] },
+  "aɪ": { words: [{w:"five",zh:"五"},{w:"nine",zh:"九"}], conf: ["eɪ","ɔɪ"] },
+  "aʊ": { words: [{w:"mouth",zh:"嘴巴"},{w:"house",zh:"房子"}], conf: ["oʊ","ɑː"] },
+  "oʊ": { words: [{w:"nose",zh:"鼻子"},{w:"boat",zh:"小船"}], conf: ["aʊ","ɔː"] },
+  "ɔɪ": { words: [{w:"boy",zh:"男孩"},{w:"toy",zh:"玩具"}], conf: ["aɪ","oʊ"] },
+  "juː": { words: [{w:"juice",zh:"果汁"},{w:"cute",zh:"可爱"}], conf: ["uː","j"] },
+  "p": { words: [{w:"pig",zh:"小猪"},{w:"apple",zh:"苹果"}], conf: ["b","k"] },
+  "b": { words: [{w:"bird",zh:"鸟"},{w:"bus",zh:"公交车"}], conf: ["p","d"] },
+  "t": { words: [{w:"two",zh:"二"},{w:"cat",zh:"猫"}], conf: ["d","k"] },
+  "d": { words: [{w:"dog",zh:"狗"},{w:"red",zh:"红色"}], conf: ["t","b"] },
+  "k": { words: [{w:"cat",zh:"猫"},{w:"cake",zh:"蛋糕"}], conf: ["g","t"] },
+  "g": { words: [{w:"goat",zh:"山羊"},{w:"green",zh:"绿色"}], conf: ["k","d"] },
+  "f": { words: [{w:"fish",zh:"鱼"},{w:"five",zh:"五"}], conf: ["v","s"] },
+  "v": { words: [{w:"van",zh:"面包车"}], conf: ["f","w"] },
+  "θ": { words: [{w:"three",zh:"三"}], conf: ["ð","s"] },
+  "ð": { words: [{w:"this",zh:"这个"}], conf: ["θ","z"] },
+  "s": { words: [{w:"six",zh:"六"},{w:"bus",zh:"公交车"}], conf: ["z","θ"] },
+  "z": { words: [{w:"eyes",zh:"眼睛"},{w:"nose",zh:"鼻子"}], conf: ["s","ð"] },
+  "ʃ": { words: [{w:"ship",zh:"轮船"},{w:"fish",zh:"鱼"}], conf: ["tʃ","s"] },
+  "ʒ": { words: [{w:"treasure",zh:"宝藏"}], conf: ["dʒ","ʃ"] },
+  "h": { words: [{w:"hands",zh:"手"},{w:"hello",zh:"你好"}], conf: ["k","f"] },
+  "m": { words: [{w:"monkey",zh:"猴子"},{w:"milk",zh:"牛奶"}], conf: ["n","ŋ"] },
+  "n": { words: [{w:"nose",zh:"鼻子"},{w:"nine",zh:"九"}], conf: ["m","l"] },
+  "ŋ": { words: [{w:"ring",zh:"戒指"}], conf: ["n","m"] },
+  "l": { words: [{w:"lion",zh:"狮子"},{w:"milk",zh:"牛奶"}], conf: ["r","n"] },
+  "r": { words: [{w:"rice",zh:"米饭"},{w:"red",zh:"红色"}], conf: ["l","w"] },
+  "w": { words: [{w:"white",zh:"白色"},{w:"one",zh:"一"}], conf: ["v","r"] },
+  "j": { words: [{w:"yellow",zh:"黄色"},{w:"juice",zh:"果汁"}], conf: ["w","dʒ"] },
+  "tʃ": { words: [{w:"chair",zh:"椅子"}], conf: ["ʃ","dʒ"] },
+  "dʒ": { words: [{w:"juice",zh:"果汁"}], conf: ["tʃ","ʒ"] }
+};
+
 // 播放真人发音MP3（通用）
 var realAudio = null;
 function playRealAudio(url, cb) {
@@ -2512,6 +2716,13 @@ function playRealAudio(url, cb) {
   realAudio.addEventListener('error', function() { if (cb) cb(); });
   realAudio.play().catch(function() { if (cb) cb(); });
   return realAudio;
+}
+
+// 播放音标本尊：优先AI真人纯音，回退例词MP3，再回退合成器
+function playPhonemePure(p) {
+  if (p.sound) { playRealAudio(p.sound); return; }
+  if (p.audio) { playRealAudio(p.audio); return; }
+  playPhonemeSoundSynth(p);
 }
 
 // 单词真人发音：优先MP3，失败回退TTS
@@ -5440,11 +5651,7 @@ function renderPhonemes(app) {
       sfxClick();
       var ipa = btn.getAttribute('data-ipa');
       var p = list.find(function(x) { return x.ipa === ipa; });
-      if (p && p.audio) {
-        playRealAudio(p.audio);
-      } else if (p) {
-        playPhonemeSoundSynth(p);
-      }
+      if (p) playPhonemePure(p);
     });
   });
 
@@ -5467,6 +5674,13 @@ function renderPhonemeDetail(app) {
   var wordObj = findWord(p.word);
   var wordZh = wordObj ? wordObj.zh : (p.wordZh || p.word);
 
+  var extra = PHONEME_EXTRA[p.ipa] || { words: [], conf: [] };
+  var extraWordsHtml = extra.words.map(function(w) {
+    var wimg = findWordImg(w.w);
+    var imgh = wimg ? '<img src="' + wimg + '" style="width:34px;height:34px;border-radius:8px;object-fit:cover" alt="' + w.w + '">' : '';
+    return '<button class="extra-word-chip" data-w="' + w.w + '">' + imgh + '<span>' + w.w + '</span><span class="ew-zh">' + w.zh + '</span></button>';
+  }).join('');
+
   app.innerHTML =
     '<div class="page-header">' +
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
@@ -5478,7 +5692,7 @@ function renderPhonemeDetail(app) {
     '<div class="phoneme-detail">' +
       '<div class="mouth-display">' + renderMouth(p.mouth, 120) + '</div>' +
       '<div class="ipa-sound-btn" id="phmIpaBtn" style="border-color:' + cat.color + '">' +
-        '<span class="tap-hint">点我听</span>' +
+        '<span class="tap-hint">点我 · 听音标本身</span>' +
         '<span class="ipa-text" style="color:' + cat.color + '">/' + p.ipa + '/</span>' +
         '<span class="ipa-speaker" style="background:' + cat.color + '">' +
           '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>' +
@@ -5502,6 +5716,22 @@ function renderPhonemeDetail(app) {
           '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>' +
         '</button>' +
       '</div>' +
+      (extraWordsHtml ? '<div class="extra-words">' + extraWordsHtml + '</div>' : '') +
+      '<div class="quiz-block" id="phmQuizBlock">' +
+        '<div class="quiz-title">' +
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M11.08 2.62a3 3 0 0 0-3.31 2.78L7.5 8.5a2 2 0 0 1-3.98.28L3 12.5a3 3 0 0 0 3 3.4h6.5a3 3 0 0 0 3-3.4l-.22-3.1a3 3 0 0 0-3.31-2.78z"/><path d="M14 6.5c1.5-2 4-2.5 6-1.5s3 3 2 4.5-3.5 2-5 1"/></svg>' +
+          '辨音挑战' +
+        '</div>' +
+        '<div class="quiz-desc">听一听，点出你听到的音标</div>' +
+        '<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin:10px 0 12px">' +
+          '<button class="btn btn-primary" id="phmQuizPlay" style="padding:10px 20px">' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
+            '听音' +
+          '</button>' +
+        '</div>' +
+        '<div class="quiz-options" id="phmQuizOpts"></div>' +
+        '<div id="phmQuizResult"></div>' +
+      '</div>' +
       '<div class="action-row">' +
         '<button class="btn btn-primary" id="phmRead">' +
           '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' +
@@ -5514,24 +5744,77 @@ function renderPhonemeDetail(app) {
 
   document.getElementById('phmDetailBack').addEventListener('click', function() { navigate('phonemes'); });
 
-  // 大音标按钮：点音标听「音素本身的发音」（真人发音MP3）
+  // 大音标按钮：点音标听「音标本身的发音」（AI真人纯音）
   function playPhonemeSound() {
     sfxClick();
-    if (p.audio) {
-      playRealAudio(p.audio);
-    } else {
-      playPhonemeSoundSynth(p); // 回退合成器
-    }
+    playPhonemePure(p);
   }
   document.getElementById('phmIpaBtn').addEventListener('click', playPhonemeSound);
 
   document.getElementById('phmListen').addEventListener('click', function() {
     sfxClick();
-    // 例词也用真人发音
-    var wordAudio = 'audio/words/' + p.word.toLowerCase() + '.mp3';
-    playRealAudio(wordAudio, function() {
-      // 单词MP3不存在时回退TTS
-      speak(p.word, { rate: 0.75 });
+    speakWord(p.word, { onEnd: function() {} });
+  });
+
+  // 更多例词点击发音
+  document.querySelectorAll('.extra-word-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      sfxClick();
+      var w = chip.getAttribute('data-w');
+      speakWord(w, { onEnd: function() {} });
+      chip.classList.add('playing');
+      setTimeout(function() { chip.classList.remove('playing'); }, 700);
+    });
+  });
+
+  // ===== 辨音挑战 =====
+  var quizOpts = [p].concat((extra.conf || []).slice(0, 2).map(function(ipa) {
+    var found = null;
+    Object.keys(PHONEMES).forEach(function(k) {
+      PHONEMES[k].forEach(function(x) { if (x.ipa === ipa) found = x; });
+    });
+    return found;
+  })).filter(function(x) { return !!x; });
+  // 去重 + 打乱
+  var seen = {}, uniq = [];
+  quizOpts.forEach(function(x) { if (!seen[x.ipa]) { seen[x.ipa] = 1; uniq.push(x); } });
+  for (var i = uniq.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = uniq[i]; uniq[i] = uniq[j]; uniq[j] = tmp;
+  }
+  var quizOptsEl = document.getElementById('phmQuizOpts');
+  var qcat = PHONEME_CATEGORIES.find(function(c) { return PHONEMES[c.id].indexOf(p) !== -1; });
+  quizOptsEl.innerHTML = uniq.map(function(x) {
+    var c2 = PHONEME_CATEGORIES.find(function(c) { return PHONEMES[c.id].indexOf(x) !== -1; });
+    return '<button class="quiz-opt" data-ipa="' + x.ipa + '" style="border-color:' + (c2 ? c2.color : '#ccc') + ';color:' + (c2 ? c2.color : '#333') + '">/' + x.ipa + '/</button>';
+  }).join('');
+  function playQuizSound() {
+    sfxClick();
+    playPhonemePure(p);
+  }
+  document.getElementById('phmQuizPlay').addEventListener('click', playQuizSound);
+  var quizDone = false;
+  quizOptsEl.querySelectorAll('.quiz-opt').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (quizDone) return;
+      sfxClick();
+      var chosen = btn.getAttribute('data-ipa');
+      var resEl = document.getElementById('phmQuizResult');
+      if (chosen === p.ipa) {
+        quizDone = true;
+        sfxCorrect();
+        state.stars = (state.stars || 0) + 1; saveState();
+        resEl.innerHTML = '<div class="quiz-ok">太棒了！你听出来啦 ' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="#FFD93D" stroke="#F39C12" stroke-width="1.5" stroke-linejoin="round" style="vertical-align:-2px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' +
+          '</div>';
+        launchConfetti();
+        speakZh('太棒了，你听出来啦！', { rate: 0.95 });
+      } else {
+        btn.classList.add('shake');
+        setTimeout(function() { btn.classList.remove('shake'); }, 500);
+        resEl.innerHTML = '<div class="quiz-no">再听一次，注意嘴巴的形状哦</div>';
+        setTimeout(playQuizSound, 500);
+      }
     });
   });
 
