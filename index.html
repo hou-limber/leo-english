@@ -3558,8 +3558,58 @@ if ('speechSynthesis' in window) {
   refreshVoices();
 }
 
+// ===== 真人配音库：AI生成的亲切女老师早教音色 =====
+// 长文本优先匹配（排在前面），命中即播放对应WAV，不再走机械TTS
+var LINE_AUDIO = [
+  ["小朋友好，欢迎来到英语小乐园", "https://aka.doubaocdn.com/s/JdO4nWbV1b"],
+  ["今天开心吗", "https://aka.doubaocdn.com/s/FU1r7GOqlq"],
+  ["我是 Leo", "https://aka.doubaocdn.com/s/bwppzI11AV"],
+  ["我是Leo", "https://aka.doubaocdn.com/s/bwppzI11AV"],
+  ["准备好了吗", "https://aka.doubaocdn.com/s/ze6z7YsAv5"],
+  ["跟着我一起念", "https://aka.doubaocdn.com/s/1p5LSz3fKV"],
+  ["念得真好听", "https://aka.doubaocdn.com/s/oErVIo852p"],
+  ["继续保持", "https://aka.doubaocdn.com/s/MqtAIj4yY6"],
+  ["最喜欢和你一起学习", "https://aka.doubaocdn.com/s/maWAfl1mVB"],
+  ["没听清", "https://aka.doubaocdn.com/s/zxwN5RKS2Q"],
+  ["不错的尝试", "https://aka.doubaocdn.com/s/VDqS9CLrX5"],
+  ["加油，你可以的", "https://aka.doubaocdn.com/s/q9nLHV4LD0"],
+  ["慢慢来", "https://aka.doubaocdn.com/s/XR1PAvQnBR"],
+  ["发音超标准", "https://aka.doubaocdn.com/s/kTbErGCqGQ"],
+  ["再来一遍会更棒", "https://aka.doubaocdn.com/s/5UaTJTgg7X"],
+  ["你今天看起来真棒", "https://aka.doubaocdn.com/s/kfUx2k2HL0"],
+  ["明天我们再一起学英语", "https://aka.doubaocdn.com/s/TKW6cbO6j1"],
+  ["明天我们学", "https://aka.doubaocdn.com/s/TKW6cbO6j1"],
+  ["wonderful", "https://aka.doubaocdn.com/s/BdwsouaC5F"],
+  ["you did it", "https://aka.doubaocdn.com/s/KnyK90kQca"],
+  ["way to go", "https://aka.doubaocdn.com/s/pu9tfsHZZg"],
+  ["you are amazing", "https://aka.doubaocdn.com/s/HBcNMjALtr"],
+  ["great job", "https://aka.doubaocdn.com/s/eYwF2U8v3x"],
+  ["proud of you", "https://aka.doubaocdn.com/s/TxUpLhnjro"],
+  ["high five", "https://aka.doubaocdn.com/s/fFmDx7UYOe"],
+  ["try again", "https://aka.doubaocdn.com/s/dUJxUQhmKi"],
+  ["you are a star", "https://aka.doubaocdn.com/s/7Ybfx6NaKz"],
+  ["learned so much", "https://aka.doubaocdn.com/s/5USqoHUBrR"],
+];
+function findLineAudio(text) {
+  if (!text) return null;
+  var low = String(text).toLowerCase();
+  for (var i = 0; i < LINE_AUDIO.length; i++) {
+    if (low.indexOf(LINE_AUDIO[i][0].toLowerCase()) !== -1) {
+      return LINE_AUDIO[i][1];
+    }
+  }
+  return null;
+}
+
 function speak(text, opts) {
   opts = opts || {};
+  // 优先播放真人配音（命中即不走TTS）
+  var lineUrl = findLineAudio(text);
+  if (lineUrl) {
+    if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch(e) {} }
+    playRealAudio(lineUrl, opts.onend);
+    return { _realAudio: true };
+  }
   if (!('speechSynthesis' in window)) return;
   // 安卓/PWA standalone 模式下需要先 resume，否则可能静音
   try { window.speechSynthesis.resume(); } catch(e) {}
@@ -4446,7 +4496,7 @@ function renderWordLearn() {
         for (var i = 0; i < 3; i++) {
           stars += '<span style="opacity:' + (i < res.score ? 1 : 0.25) + ';display:inline-block;margin:0 2px">' + starSVG(22) + '</span>';
         }
-        var msgs = { 1: "不错的尝试！", 2: "很棒！再清楚一点！", 3: "太棒了！发音真标准！" };
+        var msgs = { 1: "不错的尝试！", 2: "真不错！再来一遍会更棒哦！", 3: "太棒了！发音超标准！" };
         var colors = { 1: "var(--blue)", 2: "var(--primary-dark)", 3: "var(--green)" };
         resultEl.innerHTML = '<div style="margin-bottom:2px">' + stars + '</div><span style="font-size:14px;font-weight:700;color:' + colors[res.score] + '">' + msgs[res.score] + '</span>';
         if (res.score === 3) {
@@ -4575,7 +4625,7 @@ function renderPhonicsLearn() {
         for (var i = 0; i < 3; i++) {
           stars += '<span style="opacity:' + (i < res.score ? 1 : 0.25) + ';display:inline-block;margin:0 2px">' + starSVG(20) + '</span>';
         }
-        var msgs = { 1: "不错的尝试！", 2: "很棒！再清楚一点！", 3: "太棒了！发音真标准！" };
+        var msgs = { 1: "不错的尝试！", 2: "真不错！再来一遍会更棒哦！", 3: "太棒了！发音超标准！" };
         var colors = { 1: "var(--blue)", 2: "var(--primary-dark)", 3: "var(--green)" };
         resultEl.innerHTML = '<div style="margin-bottom:2px">' + stars + '</div><span style="font-size:14px;font-weight:700;color:' + colors[res.score] + '">' + msgs[res.score] + '</span>';
         if (res.score === 3) {
@@ -5638,7 +5688,7 @@ function showPhonicsModal(p) {
         for (var i = 0; i < 3; i++) {
           stars += '<span style="opacity:' + (i < res.score ? 1 : 0.25) + ';display:inline-block;margin:0 2px">' + starSVG(20) + '</span>';
         }
-        var msgs = { 1: "不错的尝试！", 2: "很棒！再清楚一点！", 3: "太棒了！发音真标准！" };
+        var msgs = { 1: "不错的尝试！", 2: "真不错！再来一遍会更棒哦！", 3: "太棒了！发音超标准！" };
         var colors = { 1: "var(--blue)", 2: "var(--primary-dark)", 3: "var(--green)" };
         resultEl.innerHTML = '<div style="margin-bottom:2px">' + stars + '</div><span style="font-size:14px;font-weight:700;color:' + colors[res.score] + '">' + msgs[res.score] + '</span>';
         if (res.score === 3) {
@@ -6128,19 +6178,10 @@ document.getElementById('splashStart').addEventListener('click', function() {
   var splash = document.getElementById('splash-screen');
   splash.classList.add('hidden');
   setTimeout(function() { splash.style.display = 'none'; }, 500);
-  // 欢迎语音（情绪化：有起伏、有停顿、配 Leo 气泡动画）
+  // 欢迎语音：真人配音（亲切女老师），不再走机械TTS
   setTimeout(function() {
-    var hour = new Date().getHours();
-    var greet = hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
-    speakEmo([
-      { t: greet + '，小朋友！', r: 0.78, p: 1.05, d: 200 },
-      { t: '我是 Leo！', r: 0.85, p: 1.15, d: 150 },
-      { t: '今天也要开心学英语哦！', r: 0.92, p: 1.3, d: 0 }
-    ], { lang: 'zh-CN' });
-    setTimeout(function() {
-      // 首页已渲染，气泡挂在 Leo 头像上
-      leoTalk('mascotTap', greet + '，小朋友！', 2400);
-    }, 300);
+    playRealAudio('https://aka.doubaocdn.com/s/JdO4nWbV1b');
+    leoTalk('mascotTap', '小朋友好，欢迎来到英语小乐园！', 3200);
   }, 300);
 });
 
