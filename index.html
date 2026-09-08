@@ -2485,6 +2485,52 @@ const PHONEMES = {
   ],
 };
 
+// ===== 音标真人发音映射（有道词典美式发音，预下载MP3）=====
+var PHONEME_AUDIO_MAP = {
+  "æ":"ae","e":"e","ɪ":"i_short","ʌ":"u_short","ʊ":"u_book","ə":"schwa",
+  "iː":"ee","ɑː":"ah","ɔː":"aw","uː":"oo","ɜːr":"er","ɚ":"er2",
+  "eɪ":"ay","aɪ":"eye","aʊ":"ow","oʊ":"oh","ɔɪ":"oy","juː":"you",
+  "p":"p","b":"b","t":"t","d":"d","k":"k","g":"g",
+  "f":"f","v":"v","θ":"th","ð":"dh","s":"s","z":"z",
+  "ʃ":"sh","ʒ":"zh","h":"h","m":"m","n":"n","ŋ":"ng",
+  "l":"l","r":"r","w":"w","j":"y","tʃ":"ch","dʒ":"j"
+};
+Object.keys(PHONEMES).forEach(function(cat) {
+  PHONEMES[cat].forEach(function(p) {
+    var fn = PHONEME_AUDIO_MAP[p.ipa];
+    if (fn) p.audio = 'audio/phonemes/' + fn + '.mp3';
+  });
+});
+
+// 播放真人发音MP3（通用）
+var realAudio = null;
+function playRealAudio(url, cb) {
+  if (realAudio) { try { realAudio.pause(); } catch(e) {} }
+  realAudio = new Audio(url);
+  realAudio.volume = 1.0;
+  realAudio.addEventListener('ended', function() { if (cb) cb(); });
+  realAudio.addEventListener('error', function() { if (cb) cb(); });
+  realAudio.play().catch(function() { if (cb) cb(); });
+  return realAudio;
+}
+
+// 单词真人发音：优先MP3，失败回退TTS
+function speakWord(word, opts) {
+  opts = opts || {};
+  var w = (typeof word === 'string' ? word : word.en).toLowerCase();
+  var url = 'audio/words/' + w + '.mp3';
+  // 检查文件是否存在（通过尝试播放，error时回退）
+  var a = new Audio(url);
+  a.addEventListener('canplaythrough', function() {
+    playRealAudio(url, opts.onEnd);
+  });
+  a.addEventListener('error', function() {
+    // MP3不存在，回退TTS
+    speak(typeof word === 'string' ? word : word.en, { rate: opts.rate || 0.78, onend: opts.onEnd });
+  });
+  a.load();
+}
+
 // ===== 音素合成器：直接用 Web Audio 合成音素发音 =====
 // 原理：元音用 formant（共振峰）合成；辅音用噪声+滤波+爆破
 function synthNoiseBuffer(ctx, dur) {
@@ -4364,14 +4410,14 @@ function renderWordLearn() {
   if (lessonState.wordIdx === 0) {
     setTimeout(function() {
       speak("Now let us learn new words! Listen and repeat.");
-      setTimeout(function() { speak(word.en, { rate: 0.78 }); }, 2600);
+      setTimeout(function() { speakWord(word, { rate: 0.78 }); }, 2600);
     }, 300);
   } else {
-    setTimeout(function() { speak(word.en, { rate: 0.78 }); }, 300);
+    setTimeout(function() { speakWord(word, { rate: 0.78 }); }, 300);
   }
 
   document.getElementById('wordSpeak').addEventListener('click', function() {
-    speak(word.en, { rate: 0.75 });
+    speakWord(word, { rate: 0.75 });
     if (word.example) setTimeout(function() { speak(word.example, { rate: 0.8 }); }, 1200);
   });
 
@@ -4381,7 +4427,7 @@ function renderWordLearn() {
     if (btn.classList.contains('recording')) return;
     btn.classList.add('recording');
     resultEl.innerHTML = '<span style="font-size:14px;font-weight:700;color:var(--pink)">听好啦，准备跟读...</span>';
-    var utter = speak(word.en, { rate: 0.72 });
+    var utter = speakWord(word, { rate: 0.72 });
     var doRecord = function() {
       resultEl.innerHTML = '<span style="font-size:14px;font-weight:700;color:var(--pink)">请大声念出来！</span>';
       startReadingPractice(word.en, function(res) {
@@ -4723,9 +4769,9 @@ function renderGame() {
       }).join('');
     }
 
-    setTimeout(function() { speak(spWord.en, { rate: 0.68 }); }, 400);
+    setTimeout(function() { speakWord(spWord, { rate: 0.68 }); }, 400);
     document.getElementById('gameListen').addEventListener('click', function() {
-      speak(spWord.en, { rate: 0.68 });
+      speakWord(spWord, { rate: 0.68 });
     });
 
     var spellTiles = document.querySelectorAll('.spell-tile');
@@ -4904,13 +4950,13 @@ function renderGame() {
       '<div class="game-options">' + optionsHtml + '</div>' +
       '<div class="game-score-stars" id="gameStars">' + starsHtml + '</div>';
 
-    setTimeout(function() { speak(correctWord.en, { rate: 0.8 }); }, 400);
+    setTimeout(function() { speakWord(correctWord, { rate: 0.8 }); }, 400);
   }
 
   var listenBtn = document.getElementById('gameListen');
   if (listenBtn) {
     listenBtn.addEventListener('click', function() {
-      speak(correctWord.en, { rate: 0.8 });
+      speakWord(correctWord, { rate: 0.8 });
     });
   }
 
@@ -5152,14 +5198,14 @@ function showWordModal(word, color) {
     '</div>';
   document.body.appendChild(modal);
 
-  setTimeout(function() { speak(word.en); }, 200);
+  setTimeout(function() { speakWord(word); }, 200);
 
   modal.addEventListener('click', function(e) {
     if (e.target === modal) modal.remove();
   });
   document.getElementById('modalClose').addEventListener('click', function() { modal.remove(); });
   document.getElementById('modalSpeak').addEventListener('click', function() {
-    speak(word.en);
+    speakWord(word);
     if (word.example) setTimeout(function() { speak(word.example); }, 1200);
   });
 }
@@ -5344,7 +5390,11 @@ function renderPhonemes(app) {
       sfxClick();
       var ipa = btn.getAttribute('data-ipa');
       var p = list.find(function(x) { return x.ipa === ipa; });
-      if (p) playPhonemeSoundSynth(p);
+      if (p && p.audio) {
+        playRealAudio(p.audio);
+      } else if (p) {
+        playPhonemeSoundSynth(p);
+      }
     });
   });
 
@@ -5414,16 +5464,25 @@ function renderPhonemeDetail(app) {
 
   document.getElementById('phmDetailBack').addEventListener('click', function() { navigate('phonemes'); });
 
-  // 大音标按钮：点音标听「音素本身的发音」（合成器直接发音标）
+  // 大音标按钮：点音标听「音素本身的发音」（真人发音MP3）
   function playPhonemeSound() {
     sfxClick();
-    playPhonemeSoundSynth(p);
+    if (p.audio) {
+      playRealAudio(p.audio);
+    } else {
+      playPhonemeSoundSynth(p); // 回退合成器
+    }
   }
   document.getElementById('phmIpaBtn').addEventListener('click', playPhonemeSound);
 
   document.getElementById('phmListen').addEventListener('click', function() {
     sfxClick();
-    speak(p.word, { rate: 0.75 });
+    // 例词也用真人发音
+    var wordAudio = 'audio/words/' + p.word.toLowerCase() + '.mp3';
+    playRealAudio(wordAudio, function() {
+      // 单词MP3不存在时回退TTS
+      speak(p.word, { rate: 0.75 });
+    });
   });
 
   // 自动播放一次音标发音
