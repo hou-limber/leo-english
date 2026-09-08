@@ -2671,16 +2671,32 @@ var PHONEME_EXTRA = {
   "dʒ": { words: [{w:"juice",zh:"果汁"}], conf: ["tʃ","ʒ"] }
 };
 
-// 播放真人发音MP3（通用）
+// 播放真人发音MP3（通用，带缓存）
 var realAudio = null;
+var audioCache = {};
 function playRealAudio(url, cb) {
   if (realAudio) { try { realAudio.pause(); } catch(e) {} }
-  realAudio = new Audio(url);
-  realAudio.volume = 1.0;
-  realAudio.addEventListener('ended', function() { if (cb) cb(); });
-  realAudio.addEventListener('error', function() { if (cb) cb(); });
-  realAudio.play().catch(function() { if (cb) cb(); });
-  return realAudio;
+  var a = audioCache[url];
+  if (!a) {
+    a = new Audio(url);
+    a.preload = "auto";
+    audioCache[url] = a;
+  }
+  realAudio = a;
+  try { a.currentTime = 0; } catch(e) {}
+  a.volume = 1.0;
+  var onEnded = function() { if (cb) cb(); a.removeEventListener('ended', onEnded); };
+  a.addEventListener('ended', onEnded);
+  a.play().catch(function() { if (cb) cb(); });
+  return a;
+}
+
+// 预加载音频（进入页面时调用，让后续点击秒播）
+function preloadAudio(url) {
+  if (!url || audioCache[url]) return;
+  var a = new Audio(url);
+  a.preload = "auto";
+  audioCache[url] = a;
 }
 
 // 播放音标本尊：优先AI真人纯音，回退例词MP3，再回退合成器
@@ -5423,8 +5439,8 @@ function showWordModal(word, color) {
       (word.example ? '<div class="word-example">' + word.example + '</div>' : '') +
     '</div>';
   document.body.appendChild(modal);
-
-  setTimeout(function() { speakWord(word); }, 200);
+  // 预加载单词发音，点击秒播
+  if (word.en) preloadAudio('audio/words/' + word.en.toLowerCase() + '.mp3');
 
   modal.addEventListener('click', function(e) {
     if (e.target === modal) modal.remove();
@@ -5567,6 +5583,9 @@ function renderPhonemes(app) {
 
   var cat = PHONEME_CATEGORIES.find(function(c) { return c.id === currentPhonemeCat; });
   var list = PHONEMES[currentPhonemeCat] || [];
+
+  // 预加载当前分类的音标纯音，点击秒播
+  list.forEach(function(p) { if (p.sound) preloadAudio(p.sound); });
 
   var cardsHtml = list.map(function(p) {
     var isLearned = learned.indexOf(p.ipa) !== -1;
@@ -5783,8 +5802,12 @@ function renderPhonemeDetail(app) {
     });
   });
 
-  // 自动播放一次音标发音
-  setTimeout(playPhonemeSound, 400);
+  // 预加载所有相关音频，点击秒播
+  if (p.sound) preloadAudio(p.sound);
+  if (p.audio) preloadAudio(p.audio);
+  if (p.word) preloadAudio('audio/words/' + p.word.toLowerCase() + '.mp3');
+  (p.extraWords || []).forEach(function(w) { preloadAudio('audio/words/' + w.toLowerCase() + '.mp3'); });
+  (p.confuse || []).forEach(function(c) { if (c.sound) preloadAudio(c.sound); });
 
   document.getElementById('phmRead').addEventListener('click', function() {
     sfxClick();
