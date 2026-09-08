@@ -1548,6 +1548,119 @@ body {
   color: var(--text-light);
 }
 
+/* ===== 启动欢迎页 ===== */
+#splash-screen {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(160deg, #FF8C42 0%, #FFB800 50%, #FF6B9D 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+#splash-screen.hidden {
+  opacity: 0;
+  transform: scale(1.1);
+  pointer-events: none;
+}
+.splash-logo {
+  width: 140px; height: 140px;
+  border-radius: 32px;
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+  margin-bottom: 24px;
+  animation: splashBounce 2s ease-in-out infinite;
+  overflow: hidden;
+}
+.splash-logo img { width: 100%; height: 100%; object-fit: cover; }
+@keyframes splashBounce {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-12px) rotate(2deg); }
+}
+.splash-title {
+  font-family: Fredoka;
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  margin-bottom: 8px;
+}
+.splash-sub {
+  font-size: 15px;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 36px;
+  font-weight: 600;
+}
+.splash-start-btn {
+  background: #fff;
+  color: #FF8C42;
+  border: none;
+  padding: 16px 48px;
+  border-radius: 28px;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: Fredoka;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  transition: transform 0.15s, box-shadow 0.15s;
+  animation: pulseBtn 1.8s ease-in-out infinite;
+}
+.splash-start-btn:active { transform: scale(0.95); }
+@keyframes pulseBtn {
+  0%, 100% { box-shadow: 0 6px 20px rgba(0,0,0,0.15), 0 0 0 0 rgba(255,255,255,0.5); }
+  50% { box-shadow: 0 6px 20px rgba(0,0,0,0.15), 0 0 0 16px rgba(255,255,255,0); }
+}
+.splash-hint {
+  margin-top: 20px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+}
+
+/* ===== 安装应用按钮 ===== */
+.install-banner {
+  margin: 0 16px 16px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow);
+}
+.install-banner .install-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.install-banner .install-text {
+  flex: 1;
+  color: #fff;
+}
+.install-banner .install-text .t1 { font-size: 14px; font-weight: 700; }
+.install-banner .install-text .t2 { font-size: 11px; opacity: 0.85; }
+.install-banner .install-btn {
+  background: #fff;
+  color: #764ba2;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* standalone 模式优化 */
+@media (display-mode: standalone) {
+  #app { padding-top: env(safe-area-inset-top); }
+  body { overscroll-behavior: none; }
+}
+
 /* 响应式 */
 @media (min-width: 520px) {
   #app { box-shadow: 0 0 40px rgba(0,0,0,0.06); }
@@ -1797,6 +1910,13 @@ body {
 </style>
 </head>
 <body>
+<div id="splash-screen">
+  <div class="splash-logo"><img src="https://aka.doubaocdn.com/s/nqluoPMBLY" alt="Leo"></div>
+  <div class="splash-title">Leo 英语小乐园</div>
+  <div class="splash-sub">每天 10 分钟，开心学英语</div>
+  <button class="splash-start-btn" id="splashStart">开始学习</button>
+  <div class="splash-hint">点击按钮开启声音</div>
+</div>
 
 <div id="app"></div>
 
@@ -2861,6 +2981,17 @@ function renderHome(app) {
       '<div class="stat-card" id="statStars"><div class="stat-num" style="color:var(--primary-dark)">' + state.stars + '</div><div class="stat-label">获得星星</div></div>' +
       '<div class="stat-card"><div class="stat-num" style="color:var(--secondary)">' + state.learnedWords.length + '</div><div class="stat-label">学会单词</div></div>' +
     '</div>' +
+    (canInstallApp() ?
+      '<div class="install-banner">' +
+        '<div class="install-icon">' +
+          '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+        '</div>' +
+        '<div class="install-text">' +
+          '<div class="t1">装到桌面，像 APP 一样用</div>' +
+          '<div class="t2">全屏学习，没有浏览器地址栏</div>' +
+        '</div>' +
+        '<button class="install-btn" id="installBtn">安装</button>' +
+      '</div>' : '') +
     '<div class="lesson-card ' + (done ? 'lesson-done' : '') + '">' +
       '<span class="lesson-badge">今日课程</span>' +
       '<div class="lesson-title">' + (done ? '今天已完成！' : '主题：' + topic.name) + '</div>' +
@@ -2916,6 +3047,8 @@ function renderHome(app) {
   document.getElementById('quickPhonemes').addEventListener('click', function() { sfxClick(); navigate('phonemes'); });
   document.getElementById('storeBtn').addEventListener('click', function() { sfxClick(); navigate('store'); });
   document.getElementById('statStars').addEventListener('click', function() { sfxClick(); navigate('store'); });
+  var installBtn = document.getElementById('installBtn');
+  if (installBtn) installBtn.addEventListener('click', function() { sfxClick(); installApp(); });
   document.getElementById('parentGear').addEventListener('click', function() {
     parentUnlocked = false;
     navigate('parent');
@@ -4793,6 +4926,68 @@ updateNav();
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('sw.js').catch(function() {});
+  });
+}
+
+// ===== 启动欢迎页：点击解锁声音 =====
+var soundUnlocked = false;
+function unlockSound() {
+  if (soundUnlocked) return;
+  soundUnlocked = true;
+  ensureAudio();
+  // 播放一个无声音解锁音频上下文
+  try {
+    var ctx = ensureAudio();
+    if (ctx) {
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.frequency.value = 1;
+      gain.gain.value = 0;
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.01);
+    }
+  } catch(e) {}
+}
+
+document.getElementById('splashStart').addEventListener('click', function() {
+  unlockSound();
+  var splash = document.getElementById('splash-screen');
+  splash.classList.add('hidden');
+  setTimeout(function() { splash.style.display = 'none'; }, 500);
+  // 欢迎语音
+  setTimeout(function() {
+    var hour = new Date().getHours();
+    var greet = hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
+    speakZh(greet + '，小朋友！我是 Leo，今天也要开心学英语哦！');
+  }, 300);
+});
+
+// ===== PWA 安装应用 =====
+var deferredPrompt = null;
+var isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  // 如果在首页，刷新显示安装按钮
+  if (currentRoute === 'home') render();
+});
+
+window.addEventListener('appinstalled', function() {
+  deferredPrompt = null;
+  if (currentRoute === 'home') render();
+});
+
+function canInstallApp() {
+  return deferredPrompt !== null && !isStandalone;
+}
+
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(function() {
+    deferredPrompt = null;
+    if (currentRoute === 'home') render();
   });
 }
 </script>
