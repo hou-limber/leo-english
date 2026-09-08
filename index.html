@@ -2609,54 +2609,19 @@ Object.keys(PHONEMES).forEach(function(cat) {
   });
 });
 
-// ===== 音标本尊发音（AI真人配音，点击音标播放这个音本身）=====
+// ===== 音标本尊发音（AI真人配音，本地部署，点击即播）=====
 var PHONEME_SOUND_MAP = {
-  "æ":"https://aka.doubaocdn.com/s/1rVzf4jwNX",
-  "e":"https://aka.doubaocdn.com/s/d9xGiHF1ow",
-  "ɪ":"https://aka.doubaocdn.com/s/DGVZnSfVJq",
-  "ʌ":"https://aka.doubaocdn.com/s/e967wcwkDW",
-  "ʊ":"https://aka.doubaocdn.com/s/PUDl42Qd6r",
-  "ə":"https://aka.doubaocdn.com/s/Swnb5ioqNY",
-  "iː":"https://aka.doubaocdn.com/s/fF96Ck3opC",
-  "ɑː":"https://aka.doubaocdn.com/s/7Dy5Rbh6mp",
-  "ɔː":"https://aka.doubaocdn.com/s/HpPrIuakiH",
-  "uː":"https://aka.doubaocdn.com/s/HUG5paQbVs",
-  "ɜːr":"https://aka.doubaocdn.com/s/jAuhI8303y",
-  "ɚ":"https://aka.doubaocdn.com/s/YYW8ottLkK",
-  "eɪ":"https://aka.doubaocdn.com/s/LZvUqsLIHz",
-  "aɪ":"https://aka.doubaocdn.com/s/nm9Ccm9m2q",
-  "aʊ":"https://aka.doubaocdn.com/s/cVUlLuTD6d",
-  "oʊ":"https://aka.doubaocdn.com/s/pdzUXAjdM5",
-  "ɔɪ":"https://aka.doubaocdn.com/s/LJRL5jTSmQ",
-  "juː":"https://aka.doubaocdn.com/s/TxISofDRUa",
-  "p":"https://aka.doubaocdn.com/s/Q5PnfeENnY",
-  "b":"https://aka.doubaocdn.com/s/H8nx5WZ3nO",
-  "t":"https://aka.doubaocdn.com/s/0a0wy1c2u6",
-  "d":"https://aka.doubaocdn.com/s/ISVkeve0Hg",
-  "k":"https://aka.doubaocdn.com/s/wUurRMY8Uk",
-  "g":"https://aka.doubaocdn.com/s/WhTtmsOpXy",
-  "f":"https://aka.doubaocdn.com/s/6vKXFUTBwm",
-  "v":"https://aka.doubaocdn.com/s/EipU6iWamK",
-  "θ":"https://aka.doubaocdn.com/s/pRoy4J7cnL",
-  "ð":"https://aka.doubaocdn.com/s/xwp3B5nJ8G",
-  "s":"https://aka.doubaocdn.com/s/lYpwOvl0t2",
-  "z":"https://aka.doubaocdn.com/s/QVq836BYIf",
-  "ʃ":"https://aka.doubaocdn.com/s/5wanyYtOAs",
-  "ʒ":"https://aka.doubaocdn.com/s/YUmGWYzUFt",
-  "h":"https://aka.doubaocdn.com/s/W1xmgxnMX8",
-  "m":"https://aka.doubaocdn.com/s/QLfE9nhBgE",
-  "n":"https://aka.doubaocdn.com/s/m9YZQGjZdq",
-  "ŋ":"https://aka.doubaocdn.com/s/Ay5d8YPZ4W",
-  "l":"https://aka.doubaocdn.com/s/bq0obYVjW7",
-  "r":"https://aka.doubaocdn.com/s/lZHONluRVf",
-  "w":"https://aka.doubaocdn.com/s/laftiDNyhw",
-  "j":"https://aka.doubaocdn.com/s/esVbmbOGca",
-  "tʃ":"https://aka.doubaocdn.com/s/VGFtS1kY9L",
-  "dʒ":"https://aka.doubaocdn.com/s/uwCBZfjnix"
+  "æ":"ae","e":"e","ɪ":"i_short","ʌ":"u_short","ʊ":"u_book","ə":"schwa",
+  "iː":"ee","ɑː":"ah","ɔː":"aw","uː":"oo","ɜːr":"er","ɚ":"er2",
+  "eɪ":"ay","aɪ":"eye","aʊ":"ow","oʊ":"oh","ɔɪ":"oy","juː":"you",
+  "p":"p","b":"b","t":"t","d":"d","k":"k","g":"g",
+  "f":"f","v":"v","θ":"th","ð":"dh","s":"s","z":"z",
+  "ʃ":"sh","ʒ":"zh","h":"h","m":"m","n":"n","ŋ":"ng",
+  "l":"l","r":"r","w":"w","j":"y","tʃ":"ch","dʒ":"j"
 };
 Object.keys(PHONEMES).forEach(function(cat) {
   PHONEMES[cat].forEach(function(p) {
-    if (PHONEME_SOUND_MAP[p.ipa]) p.sound = PHONEME_SOUND_MAP[p.ipa];
+    if (PHONEME_SOUND_MAP[p.ipa]) p.sound = 'audio/phonemes-pure/' + PHONEME_SOUND_MAP[p.ipa] + '.wav';
   });
 });
 
