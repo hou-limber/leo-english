@@ -1548,6 +1548,89 @@ body {
   color: var(--text-light);
 }
 
+/* ===== 语音定制卡片 ===== */
+.voice-card {
+  margin: 0 16px 16px;
+  background: linear-gradient(135deg, #FFE0B2, #FFCC80);
+  border-radius: 20px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow);
+  border: 2px dashed rgba(255,140,66,0.4);
+}
+.voice-card .voice-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF8C42, #FF6B9D);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255,107,107,0.4);
+  transition: transform 0.15s;
+  position: relative;
+}
+.voice-card .voice-icon:active { transform: scale(0.92); }
+.voice-card .voice-icon.listening { animation: voicePulse 1s ease-in-out infinite; }
+@keyframes voicePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(255,107,107,0.4), 0 0 0 0 rgba(255,107,107,0.5); }
+  50% { transform: scale(1.08); box-shadow: 0 4px 12px rgba(255,107,107,0.4), 0 0 0 14px rgba(255,107,107,0); }
+}
+.voice-card .voice-text { flex: 1; }
+.voice-card .voice-text .t1 { font-size: 15px; font-weight: 800; color: #7A4A1D; }
+.voice-card .voice-text .t2 { font-size: 12px; color: #A06A30; margin-top: 2px; }
+.voice-card .voice-status {
+  font-size: 13px;
+  font-weight: 700;
+  color: #7A4A1D;
+  background: rgba(255,255,255,0.7);
+  border-radius: 12px;
+  padding: 4px 10px;
+  min-height: 22px;
+  text-align: center;
+}
+.voice-card .voice-status.error { color: #E74C3C; }
+.voice-card .voice-status.ok { color: #2ECC71; }
+
+/* 语音定制提示条 */
+.voice-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 110px;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(45,45,45,0.92);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 24px;
+  z-index: 9998;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  max-width: 80vw;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+.voice-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.voice-toast.ok { background: #2ECC71; }
+
+/* 定制主题徽章 */
+.custom-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #FF6B9D;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 3px 8px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
 /* ===== 启动欢迎页 ===== */
 #splash-screen {
   position: fixed;
@@ -2016,6 +2099,15 @@ const IMG = {
   pink: "https://aka.doubaocdn.com/s/QVUgl30Rr0",
   black: "https://aka.doubaocdn.com/s/kO6apJujMt",
   white: "https://aka.doubaocdn.com/s/lXInKO1U5o",
+  // 交通
+  car: "https://aka.doubaocdn.com/s/BGT6HKwDQP",
+  bus: "https://aka.doubaocdn.com/s/yv8FKT2iUP",
+  bike: "https://aka.doubaocdn.com/s/yaYihrzQm0",
+  train: "https://aka.doubaocdn.com/s/2eOHZQUNCf",
+  plane: "https://aka.doubaocdn.com/s/3Rt4erLB6J",
+  boat: "https://aka.doubaocdn.com/s/OaIp2ankMX",
+  truck: "https://aka.doubaocdn.com/s/Ke6VIJLLpg",
+  scooter: "https://aka.doubaocdn.com/s/5zphWVBRHC",
 };
 
 const TOPICS = {
@@ -2107,6 +2199,19 @@ const TOPICS = {
       { en: "Grandma", zh: "奶奶", img: IMG.grandma },
       { en: "Grandpa", zh: "爷爷", img: IMG.grandpa },
       { en: "Baby", zh: "宝宝", img: IMG.baby },
+    ]
+  },
+  transport: {
+    name: "交通", color: "#36A2EB",
+    words: [
+      { en: "Car", zh: "汽车", img: IMG.car, example: "I ride in a car." },
+      { en: "Bus", zh: "公交车", img: IMG.bus, example: "The bus is yellow." },
+      { en: "Bike", zh: "自行车", img: IMG.bike, example: "I ride my bike." },
+      { en: "Train", zh: "火车", img: IMG.train, example: "The train goes fast." },
+      { en: "Plane", zh: "飞机", img: IMG.plane, example: "The plane flies high." },
+      { en: "Boat", zh: "小船", img: IMG.boat, example: "The boat is on the water." },
+      { en: "Truck", zh: "卡车", img: IMG.truck, example: "The truck is big." },
+      { en: "Scooter", zh: "滑板车", img: IMG.scooter, example: "I ride my scooter." },
     ]
   }
 };
@@ -2678,6 +2783,8 @@ let state = {
   ownedGears: [],
   activeGear: null,
   learnedPhonemes: [],
+  customTopic: null,
+  customTopicDate: null,
 };
 
 function loadState() {
@@ -2703,6 +2810,16 @@ function getDayOfYear() {
 }
 
 function getTodayTopic() {
+  // 用户语音定制优先：今天说了想学什么，就用什么
+  var custom = state.customTopic;
+  if (custom && TOPICS[custom]) {
+    var customDate = state.customTopicDate;
+    if (customDate === getTodayKey()) return custom;
+    // 跨天自动清除
+    state.customTopic = null;
+    state.customTopicDate = null;
+    saveState();
+  }
   const keys = Object.keys(TOPICS);
   return keys[getDayOfYear() % keys.length];
 }
@@ -2992,8 +3109,18 @@ function renderHome(app) {
         '</div>' +
         '<button class="install-btn" id="installBtn">安装</button>' +
       '</div>' : '') +
+    '<div class="voice-card">' +
+      '<div class="voice-icon" id="voiceBtn" title="今天想学什么？">' +
+        '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' +
+      '</div>' +
+      '<div class="voice-text">' +
+        '<div class="t1">今天想学什么？</div>' +
+        '<div class="t2">点一下话筒，说"我想学颜色"</div>' +
+      '</div>' +
+      '<div class="voice-status" id="voiceStatus">听我说</div>' +
+    '</div>' +
     '<div class="lesson-card ' + (done ? 'lesson-done' : '') + '">' +
-      '<span class="lesson-badge">今日课程</span>' +
+      '<span class="lesson-badge">今日课程</span>' + (isCustomToday() ? '<span class="custom-badge">&#127911; 你定的主题</span>' : '') +
       '<div class="lesson-title">' + (done ? '今天已完成！' : '主题：' + topic.name) + '</div>' +
       '<div class="lesson-sub">' + (done ? '太棒了，明天再来挑战新内容！' : topic.words.length + ' 个单词 + 自然拼读 + 小游戏') + '</div>' +
       '<button class="lesson-start-btn" id="startLessonBtn">' + (done ? '再玩一次' : '开始学习') + '</button>' +
@@ -3057,6 +3184,153 @@ function renderHome(app) {
     sfxClick();
     speakZh(randomItem(LEO_CHAT));
   });
+  document.getElementById('voiceBtn').addEventListener('click', startVoiceCustom);
+  document.getElementById('voiceBtn').addEventListener('touchstart', function(e) { e.preventDefault(); }, { passive: false });
+}
+
+// ===== 语音定制今日课程 =====
+var voiceRecognition = null;
+var voiceListening = false;
+
+function isCustomToday() {
+  return state.customTopic && state.customTopicDate === getTodayKey() && !!TOPICS[state.customTopic];
+}
+
+function setVoiceStatus(txt, cls) {
+  var el = document.getElementById('voiceStatus');
+  if (el) {
+    el.textContent = txt;
+    el.className = 'voice-status' + (cls ? ' ' + cls : '');
+  }
+}
+
+function showToast(msg, cls) {
+  var t = document.createElement('div');
+  t.className = 'voice-toast' + (cls ? ' ' + cls : '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.classList.add('show'); }, 10);
+  setTimeout(function() { t.classList.remove('show'); setTimeout(function() { t.remove(); }, 400); }, 2600);
+}
+
+function startVoiceCustom() {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    setVoiceStatus('不支持录音', 'error');
+    speakZh('哎呀，这个浏览器不能听我说话，请用手机自带的浏览器打开哦。');
+    return;
+  }
+  if (voiceListening) { stopVoice(); return; }
+  try {
+    voiceRecognition = new SR();
+    voiceRecognition.lang = 'zh-CN';
+    voiceRecognition.interimResults = false;
+    voiceRecognition.maxAlternatives = 3;
+
+    var voiceBtn = document.getElementById('voiceBtn');
+    voiceBtn.classList.add('listening');
+    setVoiceStatus('我在听…', '');
+    voiceListening = true;
+    sfxClick();
+
+    voiceRecognition.onresult = function(e) {
+      var text = '';
+      for (var i = 0; i < e.results.length; i++) {
+        if (e.results[i].isFinal) text += e.results[i][0].transcript;
+      }
+      handleVoiceCommand(text.trim());
+    };
+    voiceRecognition.onerror = function(e) {
+      stopVoice();
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        setVoiceStatus('没权限', 'error');
+        speakZh('麦克风没有打开，请允许使用麦克风，再试一次。');
+      } else if (e.error === 'no-speech') {
+        setVoiceStatus('没听到', 'error');
+        speakZh('我没听清，再试一次吧！');
+      } else {
+        setVoiceStatus('再试一次', 'error');
+      }
+    };
+    voiceRecognition.onend = function() {
+      stopVoice();
+      var el = document.getElementById('voiceStatus');
+      if (el && el.textContent === '我在听…') {
+        setVoiceStatus('没听到', 'error');
+        speakZh('我没听清，再试一次吧！');
+      }
+    };
+
+    voiceRecognition.start();
+  } catch(err) {
+    stopVoice();
+    setVoiceStatus('出错了', 'error');
+  }
+}
+
+function stopVoice() {
+  voiceListening = false;
+  var btn = document.getElementById('voiceBtn');
+  if (btn) btn.classList.remove('listening');
+  if (voiceRecognition) {
+    try { voiceRecognition.stop(); } catch(e) {}
+  }
+}
+
+function handleVoiceCommand(text) {
+  stopVoice();
+  if (!text) {
+    setVoiceStatus('没听到', 'error');
+    speakZh('我没听清，再说一次吧！');
+    return;
+  }
+  setVoiceStatus('听到啦', 'ok');
+
+  // 关键词 → 主题映射
+  var rules = [
+    { keys: ['颜色', '色彩', '红色', '蓝色'], topic: 'colors' },
+    { keys: ['动物', '小动物', '猫', '狗'], topic: 'animals' },
+    { keys: ['食物', '水果', '苹果', '吃饭'], topic: 'food' },
+    { keys: ['数字', '数数', '一二三', '123'], topic: 'numbers' },
+    { keys: ['身体', '五官', '头', '手'], topic: 'body' },
+    { keys: ['家人', '家庭', '爸爸', '妈妈'], topic: 'family' },
+    { keys: ['问候', '打招呼', '你好'], topic: 'greetings' },
+    { keys: ['交通', '车', '汽车', '公交车'], topic: 'transport' },
+  ];
+
+  var matched = null;
+  for (var i = 0; i < rules.length; i++) {
+    for (var j = 0; j < rules[i].keys.length; j++) {
+      if (text.indexOf(rules[i].keys[j]) !== -1) { matched = rules[i].topic; break; }
+    }
+    if (matched) break;
+  }
+
+  if (matched) {
+    state.customTopic = matched;
+    state.customTopicDate = getTodayKey();
+    // 今天的完成状态重置（换主题后可以重新学）
+    var todayKey = getTodayKey();
+    var idx = state.completedDates.indexOf(todayKey);
+    if (idx !== -1) state.completedDates.splice(idx, 1);
+    saveState();
+    var topic = TOPICS[matched];
+    speakZh('好呀！今天我们学' + topic.name + '！一起加油！');
+    // 庆祝小动画
+    showToast('今天学：' + topic.name + '！', 'ok');
+    render();
+    updateNav();
+  } else {
+    setVoiceStatus('没听懂', 'error');
+    // 推荐可学的主题
+    var names = [];
+    var keys = Object.keys(TOPICS);
+    for (var k = 0; k < keys.length; k++) {
+      if (k < 6) names.push(TOPICS[keys[k]].name);
+    }
+    speakZh('你可以说：我想学颜色、动物、食物、数字、身体、家人或者交通哦！');
+    showToast('试试说：我想学颜色', '');
+  }
 }
 
 // ----- 星星商店 -----
@@ -3991,8 +4265,8 @@ function renderReward() {
     : '你今天答对了 ' + lessonState.gameScore + ' / ' + lessonState.gameTotal + ' 题';
 
   // 明日主题预告
-  var tomorrowIdx = (getDayOfYear() + 1) % 7;
   var topicKeys = Object.keys(TOPICS);
+  var tomorrowIdx = (getDayOfYear() + 1) % topicKeys.length;
   var tomorrowTopic = TOPICS[topicKeys[tomorrowIdx]];
 
   c.innerHTML =
