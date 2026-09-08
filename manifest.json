@@ -1,0 +1,26 @@
+{
+  "name": "Leo英语小乐园",
+  "short_name": "Leo英语",
+  "description": "大班儿童每日10分钟英语学习：日常口语、自然拼读、音标、儿歌、游戏",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF8F0",
+  "theme_color": "#FF8C42",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "https://aka.doubaocdn.com/s/nqluoPMBLY",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://aka.doubaocdn.com/s/nqluoPMBLY",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
