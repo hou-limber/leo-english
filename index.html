@@ -1900,9 +1900,28 @@ body {
   border-color: var(--green);
   background: #f0fdf4;
 }
+.phoneme-sound-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  transition: all 0.2s;
+}
+.phoneme-sound-btn:active { transform: scale(0.85); background: rgba(0,0,0,0.35); }
 .phoneme-card .ipa {
   font-size: 28px;
   font-weight: 700;
+  font-family: Fredoka;
+  margin-bottom: 6px;
   color: var(--primary);
   font-family: Fredoka;
   line-height: 1.2;
@@ -2355,40 +2374,315 @@ const PHONEME_CATEGORIES = [
   { id: "diph", name: "双元音", color: "#FFD93D", desc: "从一个音滑到另一个音" },
   { id: "cons", name: "辅音", color: "#6C5CE7", desc: "气流被阻挡的音" },
 ];
+
+// ===== 完整美式英语音标（42个）=====
+// 每个音标配 snd 合成参数：点音标按钮时用 Web Audio 直接合成音素发音
 const PHONEMES = {
   short: [
-    { ipa: "æ", name: "大嘴æ", tip: "嘴巴张大，像咬一口大苹果", word: "apple", mouth: "open" },
-    { ipa: "e", name: "小嘴e", tip: "嘴巴微微张开，嘴角向两边拉", word: "egg", mouth: "small" },
-    { ipa: "ɪ", name: "短音ɪ", tip: "嘴巴放松，短促地发「一」", word: "fish", mouth: "relax" },
-    { ipa: "ɒ", name: "圆嘴ɒ", tip: "嘴巴圆圆的，像吹小喇叭", word: "dog", mouth: "round" },
-    { ipa: "ʌ", name: "短音ʌ", tip: "嘴巴放松，轻轻发「啊」", word: "monkey", mouth: "relax" },
-    { ipa: "ʊ", name: "圆嘴ʊ", tip: "嘴巴收圆，短促地发「乌」", word: "book", wordZh: "书", mouth: "roundSmall" },
+    { ipa: "æ", name: "大嘴æ", tip: "嘴巴张大，像咬一口大苹果", word: "apple", mouth: "open", snd: { t: "vowel", f1: 660, f2: 1720, dur: 0.35 } },
+    { ipa: "e", name: "小嘴e", tip: "嘴巴微微张开，嘴角向两边拉", word: "egg", mouth: "small", snd: { t: "vowel", f1: 530, f2: 1840, dur: 0.3 } },
+    { ipa: "ɪ", name: "短音ɪ", tip: "嘴巴放松，短促地发「一」", word: "fish", mouth: "relax", snd: { t: "vowel", f1: 390, f2: 1990, dur: 0.3 } },
+    { ipa: "ʌ", name: "短音ʌ", tip: "嘴巴放松，轻轻发「啊」", word: "monkey", mouth: "relax", snd: { t: "vowel", f1: 640, f2: 1190, dur: 0.3 } },
+    { ipa: "ʊ", name: "圆嘴ʊ", tip: "嘴巴收圆，短促地发「乌」", word: "book", wordZh: "书", mouth: "roundSmall", snd: { t: "vowel", f1: 440, f2: 1020, dur: 0.3 } },
+    { ipa: "ə", name: "懒音ə", tip: "嘴巴放松，轻轻发「呃」", word: "banana", wordZh: "香蕉", mouth: "relax", snd: { t: "vowel", f1: 500, f2: 1500, dur: 0.25 } },
   ],
   long: [
-    { ipa: "iː", name: "长音i:", tip: "嘴角向两边拉，长长地发「一——」", word: "green", mouth: "smile" },
-    { ipa: "ɑː", name: "长音ɑ:", tip: "嘴巴张大，长长地发「啊——」", word: "star", wordZh: "星星", mouth: "openWide" },
-    { ipa: "ɔː", name: "长音ɔ:", tip: "嘴巴圆圆，长长地发「哦——」", word: "four", mouth: "round" },
-    { ipa: "uː", name: "长音u:", tip: "嘴巴收圆，长长地发「乌——」", word: "blue", mouth: "roundSmall" },
+    { ipa: "iː", name: "长音i:", tip: "嘴角向两边拉，长长地发「一——」", word: "green", mouth: "smile", snd: { t: "vowel", f1: 270, f2: 2290, dur: 0.5 } },
+    { ipa: "ɑː", name: "长音ɑ:", tip: "嘴巴张大，长长地发「啊——」", word: "star", wordZh: "星星", mouth: "openWide", snd: { t: "vowel", f1: 730, f2: 1090, dur: 0.5 } },
+    { ipa: "ɔː", name: "长音ɔ:", tip: "嘴巴圆圆，长长地发「哦——」", word: "four", mouth: "round", snd: { t: "vowel", f1: 570, f2: 840, dur: 0.5 } },
+    { ipa: "uː", name: "长音u:", tip: "嘴巴收圆，长长地发「乌——」", word: "blue", mouth: "roundSmall", snd: { t: "vowel", f1: 300, f2: 870, dur: 0.5 } },
+    { ipa: "ɜːr", name: "卷舌ɜ:r", tip: "嘴巴放松，舌头卷起来发「儿——」", word: "bird", mouth: "small", snd: { t: "vowel", f1: 500, f2: 1500, r: true, dur: 0.5 } },
+    { ipa: "ɚ", name: "轻卷舌ɚ", tip: "轻轻的卷舌音，像「老师」的儿", word: "sister", wordZh: "姐妹", mouth: "small", snd: { t: "vowel", f1: 500, f2: 1500, r: true, dur: 0.4 } },
   ],
   diph: [
-    { ipa: "eɪ", name: "双元音eɪ", tip: "从「e」滑到「ɪ」，像说「诶」", word: "cake", mouth: "smile" },
-    { ipa: "aɪ", name: "双元音aɪ", tip: "从「a」滑到「ɪ」，像说「爱」", word: "five", mouth: "open" },
-    { ipa: "aʊ", name: "双元音aʊ", tip: "从「a」滑到「ʊ」，像说「奥」", word: "mouth", mouth: "open" },
-    { ipa: "əʊ", name: "双元音əʊ", tip: "从「ə」滑到「ʊ」，像说「欧」", word: "nose", mouth: "round" },
+    { ipa: "eɪ", name: "双元音eɪ", tip: "从「e」滑到「ɪ」，像说「诶」", word: "cake", mouth: "smile", snd: { t: "glide", f1: [530, 390], f2: [1840, 1990], dur: 0.45 } },
+    { ipa: "aɪ", name: "双元音aɪ", tip: "从「a」滑到「ɪ」，像说「爱」", word: "five", mouth: "open", snd: { t: "glide", f1: [730, 390], f2: [1090, 1990], dur: 0.45 } },
+    { ipa: "aʊ", name: "双元音aʊ", tip: "从「a」滑到「ʊ」，像说「奥」", word: "mouth", mouth: "open", snd: { t: "glide", f1: [730, 440], f2: [1090, 1020], dur: 0.45 } },
+    { ipa: "oʊ", name: "双元音oʊ", tip: "从「o」滑到「ʊ」，像说「欧」", word: "nose", mouth: "round", snd: { t: "glide", f1: [570, 440], f2: [840, 1020], dur: 0.45 } },
+    { ipa: "ɔɪ", name: "双元音ɔɪ", tip: "从「ɔ」滑到「ɪ」，像说「哦一」", word: "boy", wordZh: "男孩", mouth: "round", snd: { t: "glide", f1: [570, 390], f2: [840, 1990], dur: 0.45 } },
+    { ipa: "juː", name: "双元音ju:", tip: "先发「一」，再滑到「乌」", word: "juice", mouth: "smile", snd: { t: "glide", f1: [270, 300], f2: [2290, 870], dur: 0.45 } },
   ],
   cons: [
-    { ipa: "p", name: "清辅音p", tip: "双唇紧闭，突然放开，像吹蜡烛", word: "pig", mouth: "lips", voiced: false },
-    { ipa: "b", name: "浊辅音b", tip: "双唇紧闭，声带振动，像拍小鼓", word: "bird", mouth: "lips", voiced: true },
-    { ipa: "t", name: "清辅音t", tip: "舌尖抵上颚，突然放开", word: "two", mouth: "tongue", voiced: false },
-    { ipa: "d", name: "浊辅音d", tip: "舌尖抵上颚，声带振动", word: "dog", mouth: "tongue", voiced: true },
-    { ipa: "k", name: "清辅音k", tip: "舌根抬起，突然放开，像咳嗽", word: "cat", mouth: "throat", voiced: false },
-    { ipa: "g", name: "浊辅音g", tip: "舌根抬起，声带振动", word: "goat", mouth: "throat", voiced: true },
-    { ipa: "s", name: "清辅音s", tip: "气流从舌尖送出，像小蛇「嘶嘶」", word: "six", mouth: "teeth", voiced: false },
-    { ipa: "z", name: "浊辅音z", tip: "气流送出，声带振动，像小蜜蜂「嗡嗡」", word: "eyes", mouth: "teeth", voiced: true },
-    { ipa: "m", name: "鼻音m", tip: "双唇紧闭，气流从鼻子出来，像「嗯」", word: "monkey", mouth: "lipsClosed", voiced: true },
-    { ipa: "n", name: "鼻音n", tip: "舌尖抵上颚，气流从鼻子出来", word: "nose", mouth: "tongue", voiced: true },
+    { ipa: "p", name: "清辅音p", tip: "双唇紧闭，突然放开，像吹蜡烛", word: "pig", wordZh: "小猪", mouth: "lips", voiced: false, snd: { t: "plosive", voiced: false, place: "lip" } },
+    { ipa: "b", name: "浊辅音b", tip: "双唇紧闭，声带振动，像拍小鼓", word: "bird", mouth: "lips", voiced: true, snd: { t: "plosive", voiced: true, place: "lip" } },
+    { ipa: "t", name: "清辅音t", tip: "舌尖抵上颚，突然放开", word: "two", mouth: "tongue", voiced: false, snd: { t: "plosive", voiced: false, place: "alveolar" } },
+    { ipa: "d", name: "浊辅音d", tip: "舌尖抵上颚，声带振动", word: "dog", mouth: "tongue", voiced: true, snd: { t: "plosive", voiced: true, place: "alveolar" } },
+    { ipa: "k", name: "清辅音k", tip: "舌根抬起，突然放开，像咳嗽", word: "cat", mouth: "throat", voiced: false, snd: { t: "plosive", voiced: false, place: "velar" } },
+    { ipa: "g", name: "浊辅音g", tip: "舌根抬起，声带振动", word: "goat", wordZh: "山羊", mouth: "throat", voiced: true, snd: { t: "plosive", voiced: true, place: "velar" } },
+    { ipa: "f", name: "清辅音f", tip: "上牙轻咬下唇，气流送出，像吹风", word: "fish", mouth: "teeth", voiced: false, snd: { t: "fric", freq: 7000, voiced: false, dur: 0.28 } },
+    { ipa: "v", name: "浊辅音v", tip: "上牙轻咬下唇，声带振动", word: "van", wordZh: "面包车", mouth: "teeth", voiced: true, snd: { t: "fric", freq: 7000, voiced: true, dur: 0.28 } },
+    { ipa: "θ", name: "咬舌θ", tip: "舌尖轻咬在两齿间，气流送出", word: "three", mouth: "teeth", voiced: false, snd: { t: "fric", freq: 4000, voiced: false, dur: 0.28 } },
+    { ipa: "ð", name: "咬舌ð", tip: "舌尖轻咬两齿间，声带振动", word: "this", wordZh: "这个", mouth: "teeth", voiced: true, snd: { t: "fric", freq: 4000, voiced: true, dur: 0.28 } },
+    { ipa: "s", name: "清辅音s", tip: "气流从舌尖送出，像小蛇「嘶嘶」", word: "six", mouth: "teeth", voiced: false, snd: { t: "fric", freq: 8000, voiced: false, dur: 0.28 } },
+    { ipa: "z", name: "浊辅音z", tip: "气流送出，声带振动，像小蜜蜂「嗡嗡」", word: "eyes", mouth: "teeth", voiced: true, snd: { t: "fric", freq: 8000, voiced: true, dur: 0.28 } },
+    { ipa: "ʃ", name: "清辅音ʃ", tip: "嘴巴嘟圆，像叫别人「嘘」", word: "ship", wordZh: "轮船", mouth: "roundSmall", voiced: false, snd: { t: "fric", freq: 3000, voiced: false, dur: 0.28 } },
+    { ipa: "ʒ", name: "浊辅音ʒ", tip: "嘴巴嘟圆，声带振动", word: "treasure", wordZh: "宝藏", mouth: "roundSmall", voiced: true, snd: { t: "fric", freq: 3000, voiced: true, dur: 0.28 } },
+    { ipa: "h", name: "清辅音h", tip: "嘴巴张开，轻轻呵气，像哈气", word: "hands", mouth: "open", voiced: false, snd: { t: "fric", freq: 1500, voiced: false, dur: 0.22 } },
+    { ipa: "m", name: "鼻音m", tip: "双唇紧闭，气流从鼻子出来，像「嗯」", word: "monkey", mouth: "lipsClosed", voiced: true, snd: { t: "nasal", f: 250, f2: 900, dur: 0.3 } },
+    { ipa: "n", name: "鼻音n", tip: "舌尖抵上颚，气流从鼻子出来", word: "nose", mouth: "tongue", voiced: true, snd: { t: "nasal", f: 280, f2: 1400, dur: 0.3 } },
+    { ipa: "ŋ", name: "鼻音ŋ", tip: "舌根抬起，气流从鼻子出来，像「嗯」", word: "ring", wordZh: "戒指", mouth: "throat", voiced: true, snd: { t: "nasal", f: 250, f2: 1900, dur: 0.3 } },
+    { ipa: "l", name: "舌侧音l", tip: "舌尖抵上颚，气流从舌头两边出来", word: "lion", wordZh: "狮子", mouth: "tongue", voiced: true, snd: { t: "approx", f1: 360, f2: 1100, dur: 0.3 } },
+    { ipa: "r", name: "卷舌音r", tip: "舌头卷起，嘴巴微圆，像「儿」", word: "rice", mouth: "roundSmall", voiced: true, snd: { t: "vowel", f1: 500, f2: 1300, r: true, dur: 0.35 } },
+    { ipa: "w", name: "半元音w", tip: "嘴巴收圆，像吹口哨，很快滑开", word: "white", mouth: "roundSmall", voiced: true, snd: { t: "glide", f1: [300, 500], f2: [700, 1200], dur: 0.3 } },
+    { ipa: "j", name: "半元音j", tip: "嘴角拉开，像发「耶」", word: "yellow", mouth: "smile", voiced: true, snd: { t: "glide", f1: [270, 500], f2: [2290, 1300], dur: 0.3 } },
+    { ipa: "tʃ", name: "清辅音tʃ", tip: "先抵住上颚再放开，像「吃」", word: "chair", wordZh: "椅子", mouth: "tongue", voiced: false, snd: { t: "affricate", voiced: false, dur: 0.32 } },
+    { ipa: "dʒ", name: "浊辅音dʒ", tip: "先抵住上颚再放开，声带振动，像「知」", word: "juice", mouth: "tongue", voiced: true, snd: { t: "affricate", voiced: true, dur: 0.32 } },
   ],
 };
+
+// ===== 音素合成器：直接用 Web Audio 合成音素发音 =====
+// 原理：元音用 formant（共振峰）合成；辅音用噪声+滤波+爆破
+function synthNoiseBuffer(ctx, dur) {
+  var sr = ctx.sampleRate;
+  var buf = ctx.createBuffer(1, Math.max(1, Math.floor(sr * dur)), sr);
+  var data = buf.getChannelData(0);
+  for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  return buf;
+}
+
+function synthVowelFormant(snd) {
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var t0 = ctx.currentTime + 0.02;
+  var dur = snd.dur || 0.4;
+  var master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  // 人声基频（儿童偏高一点）
+  var f0 = 190;
+  // 基频 + 两个共振峰 近似人声元音
+  var comps = [[f0, 0.55], [snd.f1, 0.32], [snd.f2, 0.13]];
+  if (snd.r) comps.push([2500, 0.08]); // r化音色
+  comps.forEach(function(pp) {
+    var o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = pp[0];
+    var g = ctx.createGain();
+    g.gain.value = pp[1];
+    o.connect(g); g.connect(master);
+    o.start(t0); o.stop(t0 + dur + 0.05);
+  });
+  master.gain.setValueAtTime(0, t0);
+  master.gain.linearRampToValueAtTime(0.75, t0 + 0.04);
+  master.gain.setValueAtTime(0.75, t0 + dur - 0.06);
+  master.gain.linearRampToValueAtTime(0.001, t0 + dur);
+}
+
+function synthGlideFormant(snd) {
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var t0 = ctx.currentTime + 0.02;
+  var dur = snd.dur || 0.45;
+  var master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  var f0 = 190;
+  var comps = [
+    { base: f0, g: 0.55 },
+    { base: snd.f1, g: 0.32 },
+    { base: snd.f2, g: 0.13 }
+  ];
+  comps.forEach(function(pp, idx) {
+    var o = ctx.createOscillator();
+    o.type = 'sine';
+    var freq = pp.base;
+    var g = ctx.createGain();
+    g.gain.value = pp.g;
+    o.connect(g); g.connect(master);
+    o.start(t0);
+    o.frequency.setValueAtTime(pp.base[0] || pp.base, t0);
+    o.frequency.linearRampToValueAtTime(pp.base[1] || pp.base, t0 + dur);
+    o.stop(t0 + dur + 0.05);
+  });
+  master.gain.setValueAtTime(0, t0);
+  master.gain.linearRampToValueAtTime(0.7, t0 + 0.04);
+  master.gain.setValueAtTime(0.7, t0 + dur - 0.06);
+  master.gain.linearRampToValueAtTime(0.001, t0 + dur);
+}
+
+function synthFricative(snd) {
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var t0 = ctx.currentTime + 0.02;
+  var dur = snd.dur || 0.28;
+  var master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  var src = ctx.createBufferSource();
+  src.buffer = synthNoiseBuffer(ctx, dur + 0.1);
+  var bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = snd.freq;
+  bp.Q.value = 1.2;
+  src.connect(bp); bp.connect(master);
+  src.start(t0);
+  master.gain.setValueAtTime(0, t0);
+  master.gain.linearRampToValueAtTime(snd.voiced ? 0.55 : 0.5, t0 + 0.04);
+  master.gain.setValueAtTime(0.5, t0 + dur - 0.05);
+  master.gain.linearRampToValueAtTime(0.001, t0 + dur);
+  if (snd.voiced) {
+    var v = ctx.createOscillator();
+    v.type = 'sine';
+    v.frequency.value = 150;
+    var vg = ctx.createGain();
+    vg.gain.value = 0.25;
+    v.connect(vg); vg.connect(master);
+    v.start(t0); v.stop(t0 + dur + 0.05);
+  }
+}
+
+function synthPlosive(snd) {
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var t0 = ctx.currentTime + 0.02;
+  var master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  // 爆破噪声（短促）
+  var src = ctx.createBufferSource();
+  src.buffer = synthNoiseBuffer(ctx, 0.09);
+  var bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = snd.place === 'lip' ? 1200 : snd.place === 'alveolar' ? 3000 : 2500;
+  bp.Q.value = 1.5;
+  src.connect(bp); bp.connect(master);
+  src.start(t0);
+  master.gain.setValueAtTime(0, t0);
+  master.gain.linearRampToValueAtTime(0.8, t0 + 0.015);
+  master.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
+  if (snd.voiced) {
+    var v = ctx.createOscillator();
+    v.type = 'sine';
+    v.frequency.value = 130;
+    var vg = ctx.createGain();
+    vg.gain.value = 0.22;
+    v.connect(vg); vg.connect(master);
+    v.start(t0); v.stop(t0 + 0.15);
+  }
+}
+
+function synthNasal(snd) {
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var t0 = ctx.currentTime + 0.02;
+  var dur = snd.dur || 0.3;
+  var master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  var o = ctx.createOscillator();
+  o.type = 'sine';
+  o.frequency.value = snd.f;
+  var o2 = ctx.createOscillator();
+  o2.type = 'sine';
+  o2.frequency.value = snd.f2;
+  var g = ctx.createGain(); g.gain.value = 0.5;
+  var g2 = ctx.createGain(); g2.gain.value = 0.3;
+  o.connect(g); g.connect(master);
+  o2.connect(g2); g2.connect(master);
+  o.start(t0); o.stop(t0 + dur + 0.05);
+  o2.start(t0); o2.stop(t0 + dur + 0.05);
+  // 鼻音哼鸣感：轻微噪声
+  var src = ctx.createBufferSource();
+  src.buffer = synthNoiseBuffer(ctx, dur + 0.1);
+  var lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 800;
+  var ng = ctx.createGain(); ng.gain.value = 0.12;
+  src.connect(lp); lp.connect(ng); ng.connect(master);
+  src.start(t0);
+  master.gain.setValueAtTime(0, t0);
+  master.gain.linearRampToValueAtTime(0.65, t0 + 0.05);
+  master.gain.setValueAtTime(0.65, t0 + dur - 0.05);
+  master.gain.linearRampToValueAtTime(0.001, t0 + dur);
+}
+
+function synthApproximant(snd) {
+  // 近似音 l：先元音化再收
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var t0 = ctx.currentTime + 0.02;
+  var dur = snd.dur || 0.3;
+  var master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  var f0 = 180;
+  var comps = [[f0, 0.5], [snd.f1, 0.32], [snd.f2, 0.18]];
+  comps.forEach(function(pp) {
+    var o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = pp[0];
+    var g = ctx.createGain();
+    g.gain.value = pp[1];
+    o.connect(g); g.connect(master);
+    o.start(t0); o.stop(t0 + dur + 0.05);
+  });
+  master.gain.setValueAtTime(0, t0);
+  master.gain.linearRampToValueAtTime(0.6, t0 + 0.05);
+  master.gain.setValueAtTime(0.6, t0 + dur - 0.05);
+  master.gain.linearRampToValueAtTime(0.001, t0 + dur);
+}
+
+function synthAffricate(snd) {
+  // tʃ / dʒ：爆破+摩擦
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var t0 = ctx.currentTime + 0.02;
+  var dur = snd.dur || 0.32;
+  var master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  // 爆破段
+  var src = ctx.createBufferSource();
+  src.buffer = synthNoiseBuffer(ctx, 0.06);
+  var bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = 2500;
+  bp.Q.value = 1.5;
+  src.connect(bp); bp.connect(master);
+  src.start(t0);
+  master.gain.setValueAtTime(0, t0);
+  master.gain.linearRampToValueAtTime(0.7, t0 + 0.015);
+  master.gain.linearRampToValueAtTime(0.5, t0 + 0.06);
+  // 摩擦段
+  var src2 = ctx.createBufferSource();
+  src2.buffer = synthNoiseBuffer(ctx, dur);
+  var bp2 = ctx.createBiquadFilter();
+  bp2.type = 'bandpass';
+  bp2.frequency.value = 3200;
+  bp2.Q.value = 1.0;
+  var g2 = ctx.createGain(); g2.gain.value = 0.5;
+  src2.connect(bp2); bp2.connect(g2); g2.connect(master);
+  src2.start(t0 + 0.05);
+  if (snd.voiced) {
+    var v = ctx.createOscillator();
+    v.type = 'sine';
+    v.frequency.value = 140;
+    var vg = ctx.createGain();
+    vg.gain.value = 0.2;
+    v.connect(vg); vg.connect(master);
+    v.start(t0); v.stop(t0 + dur + 0.05);
+  }
+  master.gain.setValueAtTime(0, t0);
+  master.gain.linearRampToValueAtTime(0.6, t0 + 0.03);
+  master.gain.setValueAtTime(0.6, t0 + dur - 0.06);
+  master.gain.linearRampToValueAtTime(0.001, t0 + dur);
+}
+
+// 音素总入口：播放音标本身的发音
+function playPhonemeSoundSynth(p) {
+  ensureAudio();
+  var snd = p.snd || { t: 'vowel', f1: 500, f2: 1500, dur: 0.35 };
+  switch (snd.t) {
+    case 'vowel': synthVowelFormant(snd); break;
+    case 'glide': synthGlideFormant(snd); break;
+    case 'fric': synthFricative(snd); break;
+    case 'plosive': synthPlosive(snd); break;
+    case 'nasal': synthNasal(snd); break;
+    case 'approx': synthApproximant(snd); break;
+    case 'affricate': synthAffricate(snd); break;
+    default: synthVowelFormant(snd);
+  }
+}
 
 // 口型SVG：根据类型画不同嘴型的卡通脸
 function renderMouth(type, size) {
@@ -2641,6 +2935,70 @@ function playLineMelody(notesStr, cb) {
     melodyTimers = melodyTimers.filter(function(x) { return x !== timer; });
     if (cb) cb();
   }, totalMs + 60);
+  melodyTimers.push(timer);
+}
+
+// ===== 合成人声哼唱模式：让儿歌真正"唱"出来 =====
+// 每个音符用元音化 formant 音色 + 轻微颤音发声，模拟小朋友哼唱
+function singNote(freq, startTime, dur, vol) {
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var t = startTime;
+  var master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  // 人声化：基频 + 两个共振峰（模拟"啊"的口型）+ 颤音
+  var comps = [
+    [freq, 0.5],
+    [freq * 1.62, 0.2],
+    [freq * 2.44, 0.12]
+  ];
+  comps.forEach(function(pp) {
+    var o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = pp[0];
+    // 轻微颤音（vibrato），更像唱歌
+    var vib = ctx.createOscillator();
+    vib.type = 'sine';
+    vib.frequency.value = 5.5;
+    var vibGain = ctx.createGain();
+    vibGain.gain.value = freq * 0.012;
+    vib.connect(vibGain); vibGain.connect(o.frequency);
+    var g = ctx.createGain();
+    g.gain.value = pp[1];
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t + dur + 0.05);
+    vib.start(t); vib.stop(t + dur + 0.05);
+  });
+  master.gain.setValueAtTime(0, t);
+  master.gain.linearRampToValueAtTime(vol, t + 0.035);
+  master.gain.setValueAtTime(vol * 0.92, t + dur - 0.12);
+  master.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  melodyNodes.push(master);
+}
+
+// 用哼唱模式播放一行旋律（真正像唱歌）
+function playLineSing(notesStr, cb) {
+  var ctx = ensureAudio();
+  if (!ctx) { if (cb) cb(); return; }
+  var notes = notesStr.trim().split(/\s+/);
+  var t = ctx.currentTime + 0.08;
+  var BEAT = 0.36;
+  notes.forEach(function(n) {
+    var parts = n.split(':');
+    var freq = NOTE_FREQ[parts[0]];
+    var mult = parseInt(parts[1]) || 1;
+    if (!freq) return;
+    singNote(freq, t, BEAT * mult * 0.98, 0.17);
+    // 哼唱时叠加一层轻柔音乐盒伴奏
+    playNote(freq, t, BEAT * mult * 0.9, 0.05);
+    t += BEAT * mult;
+  });
+  var totalMs = (t - ctx.currentTime - 0.08) * 1000;
+  var timer = setTimeout(function() {
+    melodyTimers = melodyTimers.filter(function(x) { return x !== timer; });
+    if (cb) cb();
+  }, totalMs + 80);
   melodyTimers.push(timer);
 }
 
@@ -2988,8 +3346,11 @@ function speak(text, opts) {
   try { window.speechSynthesis.resume(); } catch(e) {}
   var utter = new SpeechSynthesisUtterance(text);
   utter.lang = opts.lang || 'en-US';
-  utter.rate = opts.rate || 0.82;
-  utter.pitch = opts.pitch || 1.1;
+  // 语气优化：基础语速+随机呼吸感微调，避免机械感
+  var baseRate = opts.rate || 0.82;
+  if (!opts.rate) baseRate = 0.82 + (Math.random() * 0.05 - 0.025);
+  utter.rate = baseRate;
+  utter.pitch = opts.pitch || (1.05 + Math.random() * 0.15);
   utter.volume = opts.volume || 1;
   var isZh = opts.lang && opts.lang.indexOf('zh') !== -1;
   var voice = isZh ? bestZhVoice : bestEnVoice;
@@ -3023,6 +3384,14 @@ function speak(text, opts) {
     } catch(e) {}
   }, 60);
   return utter;
+}
+
+// 自然语气说话：在关键句首加俏皮语气词（早教风格）
+var ZH_CHEER_LEAD = ["哇！", "耶！", "太棒了！", "嘿嘿，", "加油！", "好厉害！"];
+function speakCheer(text) {
+  var lead = randomItem(ZH_CHEER_LEAD);
+  // 短句配语气词 + 活泼音调
+  return speakZh(lead + text);
 }
 
 function speakZh(text) {
@@ -4686,6 +5055,9 @@ function renderPhonemes(app) {
     var isLearned = learned.indexOf(p.ipa) !== -1;
     return '<div class="phoneme-card' + (isLearned ? ' learned' : '') + '" data-ipa="' + p.ipa + '">' +
       (isLearned ? '<div class="check-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>' : '') +
+      '<button class="phoneme-sound-btn" data-ipa="' + p.ipa + '" aria-label="听音标发音">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>' +
+      '</button>' +
       '<div class="ipa" style="color:' + cat.color + '">/' + p.ipa + '/</div>' +
       renderPhonemeWordImg(p.word, 44) +
       '<div class="word-label">' + p.word + '</div>' +
@@ -4718,6 +5090,16 @@ function renderPhonemes(app) {
       sfxClick();
       currentPhonemeCat = tab.getAttribute('data-cat');
       renderPhonemes(app);
+    });
+  });
+
+  document.querySelectorAll('.phoneme-sound-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      sfxClick();
+      var ipa = btn.getAttribute('data-ipa');
+      var p = list.find(function(x) { return x.ipa === ipa; });
+      if (p) playPhonemeSoundSynth(p);
     });
   });
 
@@ -4787,11 +5169,10 @@ function renderPhonemeDetail(app) {
 
   document.getElementById('phmDetailBack').addEventListener('click', function() { navigate('phonemes'); });
 
-  // 大音标按钮：点音标听发音（慢速念例词两遍，突出首音）
+  // 大音标按钮：点音标听「音素本身的发音」（合成器直接发音标）
   function playPhonemeSound() {
     sfxClick();
-    speak(p.word, { rate: 0.65 });
-    setTimeout(function() { speak(p.word, { rate: 0.65 }); }, 900);
+    playPhonemeSoundSynth(p);
   }
   document.getElementById('phmIpaBtn').addEventListener('click', playPhonemeSound);
 
@@ -4821,7 +5202,7 @@ function renderPhonemeDetail(app) {
       for (var i = 0; i < 3; i++) {
         starHtml += '<span style="font-size:24px;opacity:' + (i < stars ? 1 : 0.2) + '">' + starSVG(24) + '</span>';
       }
-      var msg = stars === 3 ? '太棒了！发音很标准！' : stars === 2 ? '很不错！再练一遍更好！' : '没关系，再试一次！';
+      var msg = stars === 3 ? '哇！发音超标准，你好厉害！' : stars === 2 ? '真不错！再来一遍会更棒哦！' : '没关系，慢慢来，再试一次！';
       resultDiv.innerHTML = '<div style="background:#f0fdf4;padding:14px;border-radius:16px;text-align:center">' +
         '<div style="margin-bottom:6px">' + starHtml + '</div>' +
         '<div style="font-size:14px;font-weight:700;color:var(--green)">' + msg + '</div>' +
@@ -5130,8 +5511,10 @@ function playSingleLine(idx) {
   var line = currentSong.lines[idx];
   var melody = currentSong.melody ? currentSong.melody[idx] : null;
   if (melody) {
-    playLineMelody(melody, function() {});
-    speak(line, { rate: 0.62, pitch: 1.08 });
+    // 先唱旋律（合成人声），再慢速念词跟学
+    playLineSing(melody, function() {
+      setTimeout(function() { speak(line, { rate: 0.62, pitch: 1.08 }); }, 200);
+    });
   } else {
     speak(line, { rate: 0.7, pitch: 1.1 });
   }
@@ -5164,17 +5547,23 @@ function playSongLines(startIdx) {
   }
   if (melody) {
     pending++;
-    playLineMelody(melody, fin);
-  }
-  pending++;
-  var utter = speak(line, { rate: 0.62, pitch: 1.08 });
-  if (utter && utter.onend !== undefined) {
-    utter.onend = fin;
+    playLineSing(melody, function() {
+      // 唱完一句后，用温柔的声音带读歌词
+      if (!songStopRequested) {
+        speak(line, { rate: 0.62, pitch: 1.08 });
+      }
+      fin();
+    });
   } else {
-    setTimeout(fin, estimateMelodyMs(melody) + 800);
+    pending++;
+    var utter = speak(line, { rate: 0.7, pitch: 1.1 });
+    if (utter && utter.onend !== undefined) {
+      utter.onend = fin;
+    } else {
+      setTimeout(fin, estimateMelodyMs(melody) + 800);
+    }
+    setTimeout(fin, estimateMelodyMs(melody) + 3500);
   }
-  // 兜底：无论 TTS 是否触发回调，都确保推进
-  setTimeout(fin, estimateMelodyMs(melody) + 3500);
 }
 
 function clearSongHighlights() {
