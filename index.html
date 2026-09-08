@@ -9,8 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="Leo英语">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="https://aka.doubaocdn.com/s/nqluoPMBLY">
-<link rel="icon" type="image/png" href="https://aka.doubaocdn.com/s/nqluoPMBLY">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
 <title>Leo 英语小乐园</title>
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap">
 <style>
@@ -1616,6 +1616,107 @@ body {
 .voice-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .voice-toast.ok { background: #2ECC71; }
 
+/* ===== 安装指引弹窗 ===== */
+.install-guide-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.install-guide-overlay.show { opacity: 1; }
+.install-guide-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 24px;
+  max-width: 360px;
+  width: 100%;
+  position: relative;
+  transform: scale(0.9);
+  transition: transform 0.3s;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.install-guide-overlay.show .install-guide-card { transform: scale(1); }
+.guide-close {
+  position: absolute;
+  top: 12px; right: 16px;
+  font-size: 28px;
+  color: #999;
+  cursor: pointer;
+  line-height: 1;
+}
+.guide-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 6px;
+  font-family: Fredoka;
+}
+.guide-sub {
+  font-size: 13px;
+  color: var(--text-light);
+  text-align: center;
+  margin-bottom: 20px;
+}
+.guide-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.guide-step:last-of-type { border-bottom: none; }
+.guide-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.guide-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.guide-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.guide-tip {
+  font-size: 12px;
+  color: var(--text-light);
+  text-align: center;
+  margin: 16px 0;
+  padding: 10px;
+  background: #FFF8F0;
+  border-radius: 12px;
+}
+.guide-ok {
+  width: 100%;
+  background: linear-gradient(135deg, #FF8C42, #FF6B9D);
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 800;
+  font-family: Fredoka;
+  cursor: pointer;
+}
+
 /* 定制主题徽章 */
 .custom-badge {
   display: inline-flex;
@@ -2883,18 +2984,44 @@ if ('speechSynthesis' in window) {
 function speak(text, opts) {
   opts = opts || {};
   if (!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
+  // 安卓/PWA standalone 模式下需要先 resume，否则可能静音
+  try { window.speechSynthesis.resume(); } catch(e) {}
   var utter = new SpeechSynthesisUtterance(text);
   utter.lang = opts.lang || 'en-US';
   utter.rate = opts.rate || 0.82;
   utter.pitch = opts.pitch || 1.1;
   utter.volume = opts.volume || 1;
-  if (opts.lang && opts.lang.indexOf('zh') !== -1) {
-    if (bestZhVoice) utter.voice = bestZhVoice;
-  } else {
-    if (bestEnVoice) utter.voice = bestEnVoice;
+  var isZh = opts.lang && opts.lang.indexOf('zh') !== -1;
+  var voice = isZh ? bestZhVoice : bestEnVoice;
+  if (voice) {
+    utter.voice = voice;
+  } else if (!isZh) {
+    // 设备没有英语语音时，回退到系统默认语音（至少有声音）
+    utter.lang = 'en-US';
   }
-  window.speechSynthesis.speak(utter);
+  utter.onerror = function(e) {
+    // 被 interrupted/canceled 时静默忽略，其他错误重试一次
+    if (e.error !== 'interrupted' && e.error !== 'canceled') {
+      setTimeout(function() {
+        try {
+          var u2 = new SpeechSynthesisUtterance(text);
+          u2.lang = opts.lang || 'en-US';
+          u2.rate = opts.rate || 0.82;
+          u2.pitch = opts.pitch || 1.1;
+          if (voice) u2.voice = voice;
+          window.speechSynthesis.speak(u2);
+        } catch(err) {}
+      }, 100);
+    }
+  };
+  // cancel 是异步的，延迟一点再 speak，避免新语音被取消
+  window.speechSynthesis.cancel();
+  setTimeout(function() {
+    try {
+      window.speechSynthesis.resume();
+      window.speechSynthesis.speak(utter);
+    } catch(e) {}
+  }, 60);
   return utter;
 }
 
@@ -3098,7 +3225,7 @@ function renderHome(app) {
       '<div class="stat-card" id="statStars"><div class="stat-num" style="color:var(--primary-dark)">' + state.stars + '</div><div class="stat-label">获得星星</div></div>' +
       '<div class="stat-card"><div class="stat-num" style="color:var(--secondary)">' + state.learnedWords.length + '</div><div class="stat-label">学会单词</div></div>' +
     '</div>' +
-    (canInstallApp() ?
+    (showInstallBanner() ?
       '<div class="install-banner">' +
         '<div class="install-icon">' +
           '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
@@ -3107,7 +3234,7 @@ function renderHome(app) {
           '<div class="t1">装到桌面，像 APP 一样用</div>' +
           '<div class="t2">全屏学习，没有浏览器地址栏</div>' +
         '</div>' +
-        '<button class="install-btn" id="installBtn">安装</button>' +
+        '<button class="install-btn" id="installBtn">' + (canNativeInstall() ? '安装' : '怎么装') + '</button>' +
       '</div>' : '') +
     '<div class="voice-card">' +
       '<div class="voice-icon" id="voiceBtn" title="今天想学什么？">' +
@@ -5221,7 +5348,25 @@ function unlockSound() {
       osc.start(); osc.stop(ctx.currentTime + 0.01);
     }
   } catch(e) {}
+  // 解锁 TTS：安卓/PWA 下需要在用户手势中触发一次 speak 才能激活
+  try {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.resume();
+      var warmup = new SpeechSynthesisUtterance(' ');
+      warmup.volume = 0;
+      warmup.rate = 2;
+      window.speechSynthesis.speak(warmup);
+    }
+  } catch(e) {}
 }
+
+// 页面从后台回来时恢复音频（standalone 模式下常见）
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    try { ensureAudio(); } catch(e) {}
+    try { if ('speechSynthesis' in window) window.speechSynthesis.resume(); } catch(e) {}
+  }
+});
 
 document.getElementById('splashStart').addEventListener('click', function() {
   unlockSound();
@@ -5243,7 +5388,6 @@ var isStandalone = window.matchMedia('(display-mode: standalone)').matches || na
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   deferredPrompt = e;
-  // 如果在首页，刷新显示安装按钮
   if (currentRoute === 'home') render();
 });
 
@@ -5252,17 +5396,78 @@ window.addEventListener('appinstalled', function() {
   if (currentRoute === 'home') render();
 });
 
-function canInstallApp() {
-  return deferredPrompt !== null && !isStandalone;
+// 只要不是已安装的 standalone 模式，就显示安装横幅
+function showInstallBanner() {
+  return !isStandalone;
+}
+
+// 是否支持一键原生安装（Chrome/Edge 等）
+function canNativeInstall() {
+  return deferredPrompt !== null;
 }
 
 function installApp() {
-  if (!deferredPrompt) return;
+  if (!deferredPrompt) {
+    // 不支持原生安装时，弹出手动指引
+    showInstallGuide();
+    return;
+  }
   deferredPrompt.prompt();
   deferredPrompt.userChoice.then(function() {
     deferredPrompt = null;
     if (currentRoute === 'home') render();
   });
+}
+
+// 手动安装指引弹窗
+function showInstallGuide() {
+  var ua = navigator.userAgent;
+  var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var steps;
+  if (isIOS) {
+    steps = [
+      { icon: 'share', text: '点浏览器底部的「分享」按钮' },
+      { icon: 'plus', text: '选「添加到主屏幕」' },
+      { icon: 'add', text: '点右上角「添加」' },
+    ];
+  } else {
+    steps = [
+      { icon: 'menu', text: '点浏览器右上角的「⋮」菜单' },
+      { icon: 'install', text: '选「添加到主屏幕」或「安装应用」' },
+      { icon: 'add', text: '点「添加」确认' },
+    ];
+  }
+  var stepsHtml = steps.map(function(s, i) {
+    var iconSvg = '';
+    if (s.icon === 'share') iconSvg = '<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>';
+    else if (s.icon === 'plus') iconSvg = '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>';
+    else if (s.icon === 'menu') iconSvg = '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
+    else if (s.icon === 'install') iconSvg = '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>';
+    else iconSvg = '<polyline points="20 6 9 17 4 12"/>';
+    return '<div class="guide-step">' +
+      '<div class="guide-num">' + (i+1) + '</div>' +
+      '<div class="guide-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + iconSvg + '</svg></div>' +
+      '<div class="guide-text">' + s.text + '</div>' +
+    '</div>';
+  }).join('');
+
+  var overlay = document.createElement('div');
+  overlay.className = 'install-guide-overlay';
+  overlay.innerHTML =
+    '<div class="install-guide-card">' +
+      '<div class="guide-close" id="guideClose">&times;</div>' +
+      '<div class="guide-title">装到桌面，像 APP 一样用</div>' +
+      '<div class="guide-sub">按下面 3 步操作，桌面就会出现 Leo 图标</div>' +
+      stepsHtml +
+      '<div class="guide-tip">装好后从桌面图标打开，就是全屏 APP，没有地址栏</div>' +
+      '<button class="guide-ok" id="guideOk">我知道了</button>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  setTimeout(function() { overlay.classList.add('show'); }, 10);
+  function close() { overlay.classList.remove('show'); setTimeout(function() { overlay.remove(); }, 300); }
+  overlay.querySelector('#guideClose').addEventListener('click', close);
+  overlay.querySelector('#guideOk').addEventListener('click', close);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
 }
 </script>
 </body>
