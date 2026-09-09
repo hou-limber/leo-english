@@ -3023,26 +3023,36 @@ var PHONEME_CLIP_MAP = {
 };
 
 var _phonemeClipCache = {};
-function playPhonemeClip(clip) {
-  var ctx = ensureAudio();
-  if (!ctx) return;
-  var url = 'audio/words/' + clip.word + '.mp3';
-  if (_phonemeClipCache[url]) {
+function _playBuffer(ctx, audioBuf, clip) {
+  function doPlay() {
     var src = ctx.createBufferSource();
-    src.buffer = _phonemeClipCache[url];
+    src.buffer = audioBuf;
     src.connect(ctx.destination);
     try { src.start(0, clip.start, clip.dur); } catch(e) { src.start(0); }
+  }
+  if (ctx.state === 'suspended') {
+    ctx.resume().then(doPlay).catch(doPlay);
+  } else {
+    doPlay();
+  }
+}
+function playPhonemeClip(clip) {
+  var ctx = ensureAudio();
+  if (!ctx) { playRealAudio('audio/words/' + clip.word + '.mp3'); return; }
+  var url = 'audio/words/' + clip.word + '.mp3';
+  if (_phonemeClipCache[url]) {
+    _playBuffer(ctx, _phonemeClipCache[url], clip);
     return;
   }
   fetch(url)
-    .then(function(resp) { return resp.arrayBuffer(); })
+    .then(function(resp) {
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return resp.arrayBuffer();
+    })
     .then(function(buf) { return ctx.decodeAudioData(buf); })
     .then(function(audioBuf) {
       _phonemeClipCache[url] = audioBuf;
-      var src = ctx.createBufferSource();
-      src.buffer = audioBuf;
-      src.connect(ctx.destination);
-      try { src.start(0, clip.start, clip.dur); } catch(e) { src.start(0); }
+      _playBuffer(ctx, audioBuf, clip);
     })
     .catch(function() {
       // 截取失败，回退播放整个单词
