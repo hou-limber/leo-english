@@ -931,6 +931,118 @@ body {
 }
 .letter-tile { position: relative; }
 
+/* ===== CVC 拼读游戏 ===== */
+.cvc-target {
+  text-align: center;
+  padding: 16px 20px 8px;
+}
+.cvc-emoji {
+  font-size: 72px;
+  line-height: 1;
+  margin-bottom: 8px;
+  animation: cvcBounce 2s ease infinite;
+}
+@keyframes cvcBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.cvc-zh {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.cvc-slots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 20px;
+}
+.cvc-slot {
+  width: 64px;
+  height: 72px;
+  background: var(--card);
+  border: 3px dashed var(--text-light);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 700;
+  font-family: 'Fredoka', sans-serif;
+  color: var(--primary-dark);
+  transition: all 0.2s;
+}
+.cvc-slot.filled {
+  border-style: solid;
+  border-color: var(--primary);
+  background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+  animation: cvcPop 0.3s ease;
+}
+@keyframes cvcPop {
+  0% { transform: scale(0.8); }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+.cvc-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 12px 20px 20px;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.cvc-letter {
+  aspect-ratio: 1;
+  background: var(--card);
+  border: 3px solid var(--primary);
+  border-radius: 16px;
+  font-size: 28px;
+  font-weight: 700;
+  font-family: 'Fredoka', sans-serif;
+  color: var(--primary-dark);
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: var(--shadow);
+}
+.cvc-letter:active { transform: scale(0.9); }
+.cvc-letter.used {
+  opacity: 0.3;
+  border-color: var(--text-light);
+  color: var(--text-light);
+  cursor: default;
+}
+.cvc-result {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 8px 20px;
+}
+.cvc-result.ok { color: var(--green); }
+.cvc-result.no { color: var(--red); animation: shake 0.4s; }
+
+/* 点读模式：可点读元素有视觉提示 */
+[data-speakable] {
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s;
+}
+[data-speakable]:hover {
+  opacity: 0.8;
+}
+[data-speakable]::after {
+  content: '🔊';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+[data-speakable]:active::after {
+  opacity: 1;
+}
+
 /* 拼读学习进度与今日字母 */
 .phonics-progress {
   padding: 0 20px;
@@ -2527,6 +2639,30 @@ const PHONICS = [
   { letter: "Z", sound: "/z/", examples: ["zebra", "zoo", "zero"] },
 ];
 
+// ===== CVC 拼读单词（辅音+元音+辅音）=====
+const CVC_WORDS = [
+  { word: "cat", zh: "猫", emoji: "🐱", letters: ["c","a","t"], color: "#FF6B6B" },
+  { word: "dog", zh: "狗", emoji: "🐶", letters: ["d","o","g"], color: "#4ECDC4" },
+  { word: "pig", zh: "猪", emoji: "🐷", letters: ["p","i","g"], color: "#FFB6C1" },
+  { word: "pen", zh: "钢笔", emoji: "🖊️", letters: ["p","e","n"], color: "#6C5CE7" },
+  { word: "cup", zh: "杯子", emoji: "🥤", letters: ["c","u","p"], color: "#00B894" },
+  { word: "bed", zh: "床", emoji: "🛏️", letters: ["b","e","d"], color: "#FD79A8" },
+  { word: "hot", zh: "热", emoji: "🥵", letters: ["h","o","t"], color: "#E17055" },
+  { word: "run", zh: "跑", emoji: "🏃", letters: ["r","u","n"], color: "#0984E3" },
+  { word: "sit", zh: "坐", emoji: "🪑", letters: ["s","i","t"], color: "#00CEC9" },
+  { word: "box", zh: "盒子", emoji: "📦", letters: ["b","o","x"], color: "#A29BFE" },
+  { word: "fan", zh: "风扇", emoji: "🌀", letters: ["f","a","n"], color: "#74B9FF" },
+  { word: "map", zh: "地图", emoji: "🗺️", letters: ["m","a","p"], color: "#55EFC4" },
+  { word: "net", zh: "网", emoji: "🕸️", letters: ["n","e","t"], color: "#81ECEC" },
+  { word: "log", zh: "木头", emoji: "🪵", letters: ["l","o","g"], color: "#D4A574" },
+  { word: "bus", zh: "公交车", emoji: "🚌", letters: ["b","u","s"], color: "#FDCB6E" },
+  { word: "hen", zh: "母鸡", emoji: "🐔", letters: ["h","e","n"], color: "#E84393" },
+  { word: "sun", zh: "太阳", emoji: "☀️", letters: ["s","u","n"], color: "#F39C12" },
+  { word: "hat", zh: "帽子", emoji: "🎩", letters: ["h","a","t"], color: "#6C5CE7" },
+  { word: "rat", zh: "老鼠", emoji: "🐭", letters: ["r","a","t"], color: "#95A5A6" },
+  { word: "fox", zh: "狐狸", emoji: "🦊", letters: ["f","o","x"], color: "#E67E22" },
+];
+
 // ===== 音标（国际音标 IPA）=====
 // 精选24个核心音标，适合大班儿童：短元音6 + 长元音4 + 双元音4 + 辅音10
 // mouth: 口型类型，用于SVG口型图
@@ -3655,6 +3791,8 @@ let state = {
   learnedPhonemes: [],
   customTopic: null,
   customTopicDate: null,
+  wordLearnLog: {}, // { word: { firstLearn: ts, reviewCount: n, nextReview: ts } }
+  lastReviewDate: null,
 };
 
 function loadState() {
@@ -3677,6 +3815,52 @@ function getDayOfYear() {
   const now = new Date();
   const start = new Date(now.getFullYear(), 0, 0);
   return Math.floor((now - start) / 86400000);
+}
+
+// ===== 艾宾浩斯复习系统 =====
+var REVIEW_INTERVALS = [1, 3, 7, 14, 30]; // 天
+
+function markWordLearned(word) {
+  if (!word) return;
+  var now = Date.now();
+  var log = state.wordLearnLog[word];
+  if (!log) {
+    log = { firstLearn: now, reviewCount: 0, nextReview: now + REVIEW_INTERVALS[0] * 86400000 };
+    state.wordLearnLog[word] = log;
+  }
+  // 加入已学单词列表
+  if (state.learnedWords.indexOf(word) === -1) {
+    state.learnedWords.push(word);
+  }
+  saveState();
+}
+
+function markWordReviewed(word, correct) {
+  var log = state.wordLearnLog[word];
+  if (!log) { markWordLearned(word); return; }
+  var now = Date.now();
+  if (correct) {
+    log.reviewCount = (log.reviewCount || 0) + 1;
+    var idx = Math.min(log.reviewCount, REVIEW_INTERVALS.length - 1);
+    log.nextReview = now + REVIEW_INTERVALS[idx] * 86400000;
+  } else {
+    // 答错了，缩短到1天后再复习
+    log.reviewCount = Math.max(0, (log.reviewCount || 0) - 1);
+    log.nextReview = now + 86400000;
+  }
+  saveState();
+}
+
+function getReviewWords() {
+  var now = Date.now();
+  var words = [];
+  for (var w in state.wordLearnLog) {
+    var log = state.wordLearnLog[w];
+    if (log.nextReview && log.nextReview <= now && (log.reviewCount || 0) < REVIEW_INTERVALS.length) {
+      words.push(w);
+    }
+  }
+  return words;
 }
 
 function getTodayTopic() {
@@ -4036,7 +4220,7 @@ function updateNav() {
   var items = document.querySelectorAll('.nav-item');
   items.forEach(function(item) {
     var r = item.getAttribute('data-route');
-    if (r === currentRoute || (currentRoute === 'word-detail' && r === 'words') || (currentRoute === 'song-detail' && r === 'songs') || ((currentRoute === 'store' || currentRoute === 'parent' || currentRoute === 'phonemes' || currentRoute === 'phoneme-detail') && r === 'home')) {
+    if (r === currentRoute || (currentRoute === 'word-detail' && r === 'words') || (currentRoute === 'song-detail' && r === 'songs') || ((currentRoute === 'store' || currentRoute === 'parent' || currentRoute === 'phonemes' || currentRoute === 'phoneme-detail' || currentRoute === 'cvc-game') && r === 'home') || (currentRoute === 'cvc-game' && r === 'phonics')) {
       item.classList.add('active');
     } else {
       item.classList.remove('active');
@@ -4061,6 +4245,7 @@ function render() {
   var app = document.getElementById('app');
   if (currentRoute === 'home') renderHome(app);
   else if (currentRoute === 'lesson') renderLesson(app);
+  else if (currentRoute === 'review') renderReview(app);
   else if (currentRoute === 'words') renderWords(app);
   else if (currentRoute === 'word-detail') renderWordDetail(app);
   else if (currentRoute === 'phonics') renderPhonics(app);
@@ -4070,6 +4255,7 @@ function render() {
   else if (currentRoute === 'parent') renderParent(app);
   else if (currentRoute === 'phonemes') renderPhonemes(app);
   else if (currentRoute === 'phoneme-detail') renderPhonemeDetail(app);
+  else if (currentRoute === 'cvc-game') renderCVCGame(app);
   else renderHome(app);
   // 页面转场动画
   app.classList.remove('page-fade');
@@ -4515,6 +4701,12 @@ function achievementIcon(type) {
 
 // ----- 课程 -----
 function startLesson() {
+  // 先检查是否有需要复习的单词（艾宾浩斯）
+  var reviewWords = getReviewWords();
+  if (reviewWords.length > 0) {
+    startReview();
+    return;
+  }
   var topicKey = getTodayTopic();
   var topic = TOPICS[topicKey];
   var dayIdx = getDayOfYear();
@@ -4541,6 +4733,130 @@ function startLesson() {
     gameAnswered: false,
   };
   navigate('lesson');
+}
+
+// ===== 复习页面（艾宾浩斯）=====
+var reviewState = { words: [], idx: 0, correct: 0, wrong: 0 };
+
+function startReview() {
+  var words = getReviewWords();
+  if (words.length === 0) return false;
+  reviewState = { words: shuffleArray(words.slice()), idx: 0, correct: 0, wrong: 0 };
+  navigate('review');
+  return true;
+}
+
+function renderReview(app) {
+  if (reviewState.words.length === 0) {
+    navigate('home');
+    return;
+  }
+
+  var total = reviewState.words.length;
+  var idx = reviewState.idx;
+
+  // 复习完成
+  if (idx >= total) {
+    var pct = total > 0 ? Math.round(reviewState.correct / total * 100) : 0;
+    app.innerHTML =
+      '<div class="page-header">' +
+        '<div class="page-title">复习完成！</div>' +
+        '<div class="page-sub">今天复习了 ' + total + ' 个单词</div>' +
+      '</div>' +
+      '<div style="text-align:center;padding:30px 20px">' +
+        '<div style="font-size:72px;margin-bottom:12px">🌟</div>' +
+        '<div style="font-size:22px;font-weight:700;color:var(--green);margin-bottom:8px">答对 ' + reviewState.correct + ' / ' + total + '</div>' +
+        '<div style="font-size:15px;color:var(--text-light);margin-bottom:24px">正确率 ' + pct + '%</div>' +
+        '<button class="btn btn-green" id="reviewDone" style="width:100%;max-width:280px;font-size:17px;padding:14px">开始今天的学习 →</button>' +
+      '</div>';
+    document.getElementById('reviewDone').addEventListener('click', function() {
+      sfxClick();
+      startLesson();
+    });
+    speakZh('复习完成啦，太棒了！', { rate: 0.95 });
+    return;
+  }
+
+  var wordEn = reviewState.words[idx];
+  var wordObj = findWord(wordEn);
+  var progress = Math.round((idx / total) * 100);
+
+  // 生成4个选项（1个正确 + 3个干扰）
+  var allWords = [];
+  for (var k in TOPICS) { TOPICS[k].words.forEach(function(w) { allWords.push(w); }); }
+  var options = [wordObj];
+  while (options.length < 4) {
+    var r = allWords[Math.floor(Math.random() * allWords.length)];
+    if (options.indexOf(r) === -1) options.push(r);
+  }
+  options = shuffleArray(options);
+
+  var backSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+
+  app.innerHTML =
+    '<div class="page-header">' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
+        '<button class="back-btn" id="reviewBack">' + backSvg + '</button>' +
+      '</div>' +
+      '<div class="page-title">复习时间</div>' +
+      '<div class="page-sub">听一听，选一选</div>' +
+      '<div class="phonics-progress">' +
+        '<div class="phonics-progress-bar"><div class="phonics-progress-fill" style="width:' + progress + '%"></div></div>' +
+        '<div class="phonics-progress-text">第 ' + (idx + 1) + ' / ' + total + ' 个</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="text-align:center;padding:16px 20px 8px">' +
+      '<button class="speak-btn" id="reviewPlay" style="width:72px;height:72px;font-size:28px">' + speakerSVG(32) + '</button>' +
+      '<div style="font-size:14px;color:var(--text-light);margin-top:8px;font-weight:600">点喇叭再听一遍</div>' +
+    '</div>' +
+    '<div class="game-grid" id="reviewOptions">' +
+      options.map(function(w, i) {
+        var img = findWordImg(w.en);
+        return '<div class="game-card" data-word="' + w.en + '" data-idx="' + i + '">' +
+          (img ? '<img src="' + img + '" class="game-card-img" alt="' + w.en + '">' : '<div class="game-card-img" style="display:flex;align-items:center;justify-content:center;font-size:40px">' + (w.emoji || '🔤') + '</div>') +
+          '<div class="game-card-word">' + w.en + '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+
+  document.getElementById('reviewBack').addEventListener('click', function() { navigate('home'); });
+
+  var playSound = function() {
+    if (wordObj) speakWord(wordObj);
+    else speak(wordEn);
+  };
+  document.getElementById('reviewPlay').addEventListener('click', function() { sfxClick(); playSound(); });
+
+  // 自动播放
+  setTimeout(playSound, 400);
+
+  app.querySelectorAll('.game-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      var chosen = card.getAttribute('data-word');
+      var isCorrect = chosen === wordEn;
+      if (isCorrect) {
+        sfxCorrect();
+        reviewState.correct++;
+        markWordReviewed(wordEn, true);
+        card.classList.add('correct');
+        card.innerHTML += '<div class="game-card-check">' +
+          '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>';
+      } else {
+        sfxWrong();
+        reviewState.wrong++;
+        markWordReviewed(wordEn, false);
+        card.classList.add('wrong');
+        // 高亮正确答案
+        app.querySelectorAll('.game-card').forEach(function(c) {
+          if (c.getAttribute('data-word') === wordEn) c.classList.add('correct');
+        });
+      }
+      setTimeout(function() {
+        reviewState.idx++;
+        renderReview(app);
+      }, isCorrect ? 900 : 1500);
+    });
+  });
 }
 
 function renderLesson(app) {
@@ -4630,7 +4946,7 @@ function renderWordLearn() {
     '<div class="word-card">' +
       '<span class="word-counter">' + (lessonState.wordIdx + 1) + ' / ' + total + '</span>' +
       visual +
-      '<div class="word-en">' + word.en + '</div>' +
+      '<div class="word-en" data-speakable="' + word.en + '">' + word.en + '</div>' +
       '<div class="word-zh">' + word.zh + '</div>' +
       '<div style="display:flex;gap:16px;justify-content:center;margin:8px 0">' +
         '<div style="text-align:center">' +
@@ -4645,7 +4961,7 @@ function renderWordLearn() {
         '</div>' +
       '</div>' +
       '<div id="readResult" style="min-height:28px;text-align:center"></div>' +
-      (word.example ? '<div class="word-example">' + word.example + '</div>' : '') +
+      (word.example ? '<div class="word-example" data-speakable="' + word.example.replace(/"/g, '&quot;') + '">' + word.example + '</div>' : '') +
     '</div>' +
     '<button class="btn btn-primary" id="wordNext">' + (lessonState.wordIdx < total - 1 ? '下一个' : '完成单词') + '</button>';
 
@@ -4711,10 +5027,8 @@ function renderWordLearn() {
     }
   });
   document.getElementById('wordNext').addEventListener('click', function() {
-    // 标记已学单词
-    if (state.learnedWords.indexOf(word.en.toLowerCase()) === -1) {
-      state.learnedWords.push(word.en.toLowerCase());
-    }
+    // 标记已学单词 + 记录学习时间（用于艾宾浩斯复习）
+    markWordLearned(word.en.toLowerCase());
     saveState();
     if (lessonState.wordIdx < total - 1) {
       lessonState.wordIdx++;
@@ -5381,7 +5695,7 @@ function renderWordDetail(app) {
     return '<div class="word-row" data-word=\'' + JSON.stringify(w).replace(/'/g, "&#39;") + '\'>' +
       '<div class="word-row-thumb">' + thumb + '</div>' +
       '<div class="word-row-info">' +
-        '<div class="word-row-en">' + w.en + '</div>' +
+        '<div class="word-row-en" data-speakable="' + w.en + '">' + w.en + '</div>' +
         '<div class="word-row-zh">' + w.zh + '</div>' +
       '</div>' +
       '<button class="word-row-speak" data-speak="' + w.en + '">' + speakerSVG(20, t.color) + '</button>' +
@@ -5433,10 +5747,10 @@ function showWordModal(word, color) {
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
       '</button>' +
       visual +
-      '<div class="word-en">' + word.en + '</div>' +
+      '<div class="word-en" data-speakable="' + word.en + '">' + word.en + '</div>' +
       '<div class="word-zh">' + word.zh + '</div>' +
       '<button class="speak-btn" id="modalSpeak">' + speakerSVG(28) + '</button>' +
-      (word.example ? '<div class="word-example">' + word.example + '</div>' : '') +
+      (word.example ? '<div class="word-example" data-speakable="' + word.example + '">' + word.example + '</div>' : '') +
     '</div>';
   document.body.appendChild(modal);
   // 预加载单词发音，点击秒播
@@ -5532,7 +5846,13 @@ function renderPhonics(app) {
     '<div style="padding:0 20px 12px">' +
       '<div style="font-size:13px;font-weight:700;color:var(--text-light);margin-bottom:10px">字母表</div>' +
     '</div>' +
-    '<div class="letter-grid">' + tilesHtml + '</div>';
+    '<div class="letter-grid">' + tilesHtml + '</div>' +
+    '<div style="padding:16px 20px 24px">' +
+      '<button class="btn btn-purple" id="cvcGameBtn" style="width:100%;font-size:16px;padding:14px;display:flex;align-items:center;justify-content:center;gap:8px">' +
+        '<span style="font-size:22px">🔤</span>' +
+        '拼读小游戏：把字母拼起来读' +
+      '</button>' +
+    '</div>';
 
   document.getElementById('phBack').addEventListener('click', function() { navigate('home'); });
 
@@ -5565,6 +5885,161 @@ function renderPhonics(app) {
       showPhonicsModal(p);
     });
   });
+
+  document.getElementById('cvcGameBtn').addEventListener('click', function() {
+    sfxClick();
+    navigate('cvc-game');
+  });
+}
+
+// ===== CVC 拼读游戏 =====
+var cvcState = { idx: 0, slots: [], shuffled: [], correct: 0, initialized: false };
+
+function shuffleArray(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  }
+  return arr;
+}
+
+function renderCVCGame(app) {
+  if (!cvcState.initialized || cvcState.idx >= CVC_WORDS.length) {
+    cvcState = { idx: 0, slots: [], shuffled: [], correct: 0, initialized: true };
+    cvcState.shuffled = shuffleArray(CVC_WORDS.slice());
+  }
+
+  var item = cvcState.shuffled[cvcState.idx];
+  var progress = Math.round((cvcState.idx / CVC_WORDS.length) * 100);
+
+  // 生成可选字母（正确3个 + 干扰3个）
+  var allLetters = "abcdefghijklmnopqrstuvwxyz".split("");
+  var correctLetters = item.letters;
+  var distractors = [];
+  while (distractors.length < 3) {
+    var r = allLetters[Math.floor(Math.random() * 26)];
+    if (correctLetters.indexOf(r) === -1 && distractors.indexOf(r) === -1) {
+      distractors.push(r);
+    }
+  }
+  var options = shuffleArray(correctLetters.concat(distractors));
+
+  var slotsHtml = [0,1,2].map(function(i) {
+    var s = cvcState.slots[i] || '';
+    return '<div class="cvc-slot' + (s ? ' filled' : '') + '" data-idx="' + i + '">' + s + '</div>';
+  }).join('');
+
+  var allFilled = cvcState.slots.length === 3 && cvcState.slots.every(function(s) { return s; });
+  var isCorrect = allFilled && cvcState.slots.join('') === item.word;
+  var isWrong = allFilled && !isCorrect;
+
+  var backSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+
+  app.innerHTML =
+    '<div class="page-header">' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
+        '<button class="back-btn" id="cvcBack">' + backSvg + '</button>' +
+      '</div>' +
+      '<div class="page-title">拼读小达人</div>' +
+      '<div class="page-sub">把字母拼起来，读一读</div>' +
+      '<div class="phonics-progress">' +
+        '<div class="phonics-progress-bar"><div class="phonics-progress-fill" style="width:' + progress + '%"></div></div>' +
+        '<div class="phonics-progress-text">第 ' + (cvcState.idx + 1) + ' / ' + CVC_WORDS.length + ' 个 · 已拼对 ' + cvcState.correct + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="cvc-target">' +
+      '<div class="cvc-emoji">' + item.emoji + '</div>' +
+      '<div class="cvc-zh">' + item.zh + '</div>' +
+      '<button class="speak-btn" id="cvcListen" style="margin-top:8px;font-size:14px;padding:8px 16px">' + speakerSVG(20) + ' 听一遍</button>' +
+    '</div>' +
+    '<div class="cvc-slots">' + slotsHtml + '</div>' +
+    (isCorrect ? '<div class="cvc-result ok">太棒了！' + item.word + ' 🎉</div>' : '') +
+    (isWrong ? '<div class="cvc-result no">再想想，点字母重拼一次</div>' : '') +
+    '<div class="cvc-options">' +
+      options.map(function(l) {
+        var used = cvcState.slots.indexOf(l) !== -1;
+        return '<button class="cvc-letter' + (used ? ' used' : '') + '" data-letter="' + l + '"' + (used ? ' disabled' : '') + '>' + l + '</button>';
+      }).join('') +
+    '</div>' +
+    (isCorrect ? '<button class="btn btn-green" id="cvcNext" style="margin:8px 20px 20px;width:calc(100% - 40px)">下一个 →</button>' : '') +
+    (isWrong ? '<button class="btn btn-orange" id="cvcReset" style="margin:8px 20px 20px;width:calc(100% - 40px)">重新拼</button>' : '');
+
+  document.getElementById('cvcBack').addEventListener('click', function() { navigate('phonics'); });
+
+  document.getElementById('cvcListen').addEventListener('click', function() {
+    sfxClick();
+    speakWord(item.word, { rate: 0.7 });
+  });
+
+  app.querySelectorAll('.cvc-letter').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (btn.classList.contains('used')) return;
+      sfxClick();
+      var letter = btn.getAttribute('data-letter');
+      var emptyIdx = -1;
+      for (var i = 0; i < 3; i++) { if (!cvcState.slots[i]) { emptyIdx = i; break; } }
+      if (emptyIdx === -1) return;
+      cvcState.slots[emptyIdx] = letter;
+      speak(letter, { rate: 0.8 });
+      var filled = cvcState.slots.filter(function(s) { return s; }).length;
+      if (filled === 3) {
+        setTimeout(function() {
+          var guess = cvcState.slots.join('');
+          if (guess === item.word) {
+            sfxCorrect();
+            cvcState.correct++;
+            state.stars = (state.stars || 0) + 1;
+            saveState();
+            launchConfetti();
+            speakZh('太棒了，拼对啦！', { rate: 0.95 });
+            setTimeout(function() { speakWord(item.word, { rate: 0.65 }); }, 700);
+          } else {
+            sfxWrong();
+            speakZh('再想想哦', { rate: 0.95 });
+          }
+          renderCVCGame(app);
+        }, 500);
+        return;
+      }
+      renderCVCGame(app);
+    });
+  });
+
+  app.querySelectorAll('.cvc-slot').forEach(function(slot) {
+    slot.addEventListener('click', function() {
+      var idx = parseInt(slot.getAttribute('data-idx'));
+      if (cvcState.slots[idx]) {
+        sfxClick();
+        cvcState.slots[idx] = '';
+        renderCVCGame(app);
+      }
+    });
+  });
+
+  var nextBtn = document.getElementById('cvcNext');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', function() {
+      sfxClick();
+      cvcState.idx++;
+      cvcState.slots = [];
+      if (cvcState.idx >= CVC_WORDS.length) {
+        speakZh('太厉害了，全部拼完啦！', { rate: 0.95 });
+        cvcState.idx = 0;
+        cvcState.correct = 0;
+        cvcState.shuffled = shuffleArray(CVC_WORDS.slice());
+      }
+      renderCVCGame(app);
+    });
+  }
+
+  var resetBtn = document.getElementById('cvcReset');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function() {
+      sfxClick();
+      cvcState.slots = [];
+      renderCVCGame(app);
+    });
+  }
 }
 
 // ===== 音标学习 =====
@@ -5662,7 +6137,7 @@ function renderPhonemeDetail(app) {
   var extraWordsHtml = extra.words.map(function(w) {
     var wimg = findWordImg(w.w);
     var imgh = wimg ? '<img src="' + wimg + '" style="width:34px;height:34px;border-radius:8px;object-fit:cover" alt="' + w.w + '">' : '';
-    return '<button class="extra-word-chip" data-w="' + w.w + '">' + imgh + '<span>' + w.w + '</span><span class="ew-zh">' + w.zh + '</span></button>';
+    return '<button class="extra-word-chip" data-w="' + w.w + '">' + imgh + '<span data-speakable="' + w.w + '">' + w.w + '</span><span class="ew-zh">' + w.zh + '</span></button>';
   }).join('');
 
   app.innerHTML =
@@ -5859,8 +6334,8 @@ function showPhonicsModal(p) {
   var learned = (state.learnedLetters || []).indexOf(p.letter) !== -1;
   var examplesHtml = p.examples.map(function(ex) {
     var img = findWordImg(ex);
-    var tag = '<span class="phonics-example-tag" data-ex="' + ex + '">' + ex + '</span>';
-    if (img) tag = '<div class="phonics-example-item"><span class="phonics-example-tag" data-ex="' + ex + '">' + ex + '</span>' +
+    var tag = '<span class="phonics-example-tag" data-speakable="' + ex + '">' + ex + '</span>';
+    if (img) tag = '<div class="phonics-example-item"><span class="phonics-example-tag" data-speakable="' + ex + '">' + ex + '</span>' +
       '<img src="' + img + '" class="phonics-example-img" data-ex="' + ex + '" alt="' + ex + '"></div>';
     return tag;
   }).join('');
@@ -6053,7 +6528,7 @@ function renderSongDetail(app) {
   var linesHtml = s.lines.map(function(line, idx) {
     return '<div class="song-line" data-idx="' + idx + '" id="songLine' + idx + '">' +
       '<span class="song-line-num">' + (idx + 1) + '</span>' +
-      '<span class="song-line-text">' + line + '</span>' +
+      '<span class="song-line-text" data-speakable="' + line.replace(/"/g, '&quot;') + '">' + line + '</span>' +
       '<button class="song-line-play" data-idx="' + idx + '">' +
         '<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
       '</button>' +
@@ -6383,6 +6858,28 @@ function getWeekDays() {
 //  初始化
 // ============================================================
 loadState();
+
+// ===== 全局点读：点击任何带 data-speakable 的英文就发音 =====
+document.addEventListener('click', function(e) {
+  var el = e.target.closest('[data-speakable]');
+  if (!el) return;
+  // 避免和按钮自身的点击事件冲突
+  if (el.tagName === 'BUTTON' && el.getAttribute('data-speakable') === 'self') return;
+  var text = el.getAttribute('data-speakable') || el.textContent.trim();
+  if (!text) return;
+  sfxClick();
+  // 单词优先用真人发音
+  var wordObj = findWord(text.toLowerCase());
+  if (wordObj) {
+    speakWord(wordObj);
+  } else {
+    speak(text, { rate: 0.75 });
+  }
+  // 视觉反馈
+  el.style.transition = 'transform 0.15s';
+  el.style.transform = 'scale(0.92)';
+  setTimeout(function() { el.style.transform = ''; }, 150);
+});
 
 // 底部导航
 document.querySelectorAll('.nav-item').forEach(function(item) {
