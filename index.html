@@ -3025,29 +3025,29 @@ var PHONEME_CLIP_MAP = {
 var _phonemeClipAudio = null;
 function playPhonemeClip(clip) {
   var url = 'audio/words/' + clip.word + '.mp3';
-  // 用全局audioCache缓存（和playRealAudio共享）
-  var a = audioCache[url];
-  if (!a) {
-    a = new Audio(url);
-    a.preload = "auto";
-    audioCache[url] = a;
-  }
   // 暂停之前的截取播放
-  if (_phonemeClipAudio && _phonemeClipAudio !== a) {
+  if (_phonemeClipAudio) {
     try { _phonemeClipAudio.pause(); } catch(e) {}
   }
+  var a = new Audio();
+  a.preload = 'auto';
+  a.src = url;
   _phonemeClipAudio = a;
-  // 设置开始时间并直接播放（在用户点击回调中，不会被自动播放策略阻止）
-  try { a.currentTime = clip.start; } catch(e) {}
-  a.volume = 1.0;
   var stopAt = clip.start + clip.dur;
+  var seeked = false;
   var onTimeUpdate = function() {
+    if (!seeked && a.currentTime > 0 && a.currentTime < clip.start) {
+      seeked = true;
+      try { a.currentTime = clip.start; } catch(e) {}
+      return;
+    }
     if (a.currentTime >= stopAt || a.ended) {
       a.pause();
       a.removeEventListener('timeupdate', onTimeUpdate);
     }
   };
   a.addEventListener('timeupdate', onTimeUpdate);
+  // 直接播放（在用户点击回调中，不会被自动播放策略阻止）
   a.play().catch(function() {
     a.removeEventListener('timeupdate', onTimeUpdate);
     // 播放失败，回退播放整个单词
