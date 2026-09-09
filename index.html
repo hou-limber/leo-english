@@ -3022,31 +3022,37 @@ var PHONEME_CLIP_MAP = {
   "dʒ": {word: "juice", start: 0, dur: 0.3},
 };
 
-var _phonemeClipCache = {};
+var _phonemeClipAudio = null;
 function playPhonemeClip(clip) {
   var url = 'audio/words/' + clip.word + '.mp3';
-  var a = new Audio();
-  a.src = url;
-  a.preload = 'auto';
-  a.oncanplay = function() {
-    try { a.currentTime = clip.start; } catch(e) {}
-    a.play().catch(function() {
-      // 自动播放被阻止，回退播放整个单词
-      playRealAudio(url);
-    });
-    // 到截取结束时间暂停
-    var stopAt = clip.start + clip.dur;
-    var checker = setInterval(function() {
-      if (a.currentTime >= stopAt || a.ended) {
-        clearInterval(checker);
-        a.pause();
-        a.currentTime = 0;
-      }
-    }, 30);
+  // 用全局audioCache缓存（和playRealAudio共享）
+  var a = audioCache[url];
+  if (!a) {
+    a = new Audio(url);
+    a.preload = "auto";
+    audioCache[url] = a;
+  }
+  // 暂停之前的截取播放
+  if (_phonemeClipAudio && _phonemeClipAudio !== a) {
+    try { _phonemeClipAudio.pause(); } catch(e) {}
+  }
+  _phonemeClipAudio = a;
+  // 设置开始时间并直接播放（在用户点击回调中，不会被自动播放策略阻止）
+  try { a.currentTime = clip.start; } catch(e) {}
+  a.volume = 1.0;
+  var stopAt = clip.start + clip.dur;
+  var onTimeUpdate = function() {
+    if (a.currentTime >= stopAt || a.ended) {
+      a.pause();
+      a.removeEventListener('timeupdate', onTimeUpdate);
+    }
   };
-  a.onerror = function() {
+  a.addEventListener('timeupdate', onTimeUpdate);
+  a.play().catch(function() {
+    a.removeEventListener('timeupdate', onTimeUpdate);
+    // 播放失败，回退播放整个单词
     playRealAudio(url);
-  };
+  });
 }
 
 // ===== 音标更多例词 + 辨音挑战混淆对 =====
