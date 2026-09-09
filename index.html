@@ -2965,7 +2965,7 @@ var PHONEME_SOUND_MAP = {
 };
 Object.keys(PHONEMES).forEach(function(cat) {
   PHONEMES[cat].forEach(function(p) {
-    if (PHONEME_SOUND_MAP[p.ipa]) p.sound = 'audio/phonemes-pure/' + PHONEME_SOUND_MAP[p.ipa] + '.wav';
+    if (PHONEME_SOUND_MAP[p.ipa]) p.sound = 'audio/phonemes-baidu/' + PHONEME_SOUND_MAP[p.ipa] + '.mp3';
   });
 });
 
