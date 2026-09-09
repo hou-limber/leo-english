@@ -3023,41 +3023,30 @@ var PHONEME_CLIP_MAP = {
 };
 
 var _phonemeClipCache = {};
-function _playBuffer(ctx, audioBuf, clip) {
-  function doPlay() {
-    var src = ctx.createBufferSource();
-    src.buffer = audioBuf;
-    src.connect(ctx.destination);
-    try { src.start(0, clip.start, clip.dur); } catch(e) { src.start(0); }
-  }
-  if (ctx.state === 'suspended') {
-    ctx.resume().then(doPlay).catch(doPlay);
-  } else {
-    doPlay();
-  }
-}
 function playPhonemeClip(clip) {
-  var ctx = ensureAudio();
-  if (!ctx) { playRealAudio('audio/words/' + clip.word + '.mp3'); return; }
   var url = 'audio/words/' + clip.word + '.mp3';
-  if (_phonemeClipCache[url]) {
-    _playBuffer(ctx, _phonemeClipCache[url], clip);
-    return;
-  }
-  fetch(url)
-    .then(function(resp) {
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      return resp.arrayBuffer();
-    })
-    .then(function(buf) { return ctx.decodeAudioData(buf); })
-    .then(function(audioBuf) {
-      _phonemeClipCache[url] = audioBuf;
-      _playBuffer(ctx, audioBuf, clip);
-    })
-    .catch(function() {
-      // 截取失败，回退播放整个单词
+  var a = new Audio();
+  a.src = url;
+  a.preload = 'auto';
+  a.oncanplay = function() {
+    try { a.currentTime = clip.start; } catch(e) {}
+    a.play().catch(function() {
+      // 自动播放被阻止，回退播放整个单词
       playRealAudio(url);
     });
+    // 到截取结束时间暂停
+    var stopAt = clip.start + clip.dur;
+    var checker = setInterval(function() {
+      if (a.currentTime >= stopAt || a.ended) {
+        clearInterval(checker);
+        a.pause();
+        a.currentTime = 0;
+      }
+    }, 30);
+  };
+  a.onerror = function() {
+    playRealAudio(url);
+  };
 }
 
 // ===== 音标更多例词 + 辨音挑战混淆对 =====
