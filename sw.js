@@ -1,5 +1,5 @@
 // Leo英语小乐园 Service Worker
-const CACHE_NAME = 'leo-english-v6';
+const CACHE_NAME = 'leo-english-v7';
 const ASSETS = [
   './index.html',
   './manifest.json',

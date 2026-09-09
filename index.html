@@ -2220,6 +2220,49 @@ body {
   font-weight: 600;
   line-height: 1.4;
 }
+.phoneme-tips-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.phoneme-tips-card .tip-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #f0f0f0;
+}
+.phoneme-tips-card .tip-row:last-child { border-bottom: none; }
+.phoneme-tips-card .tip-emoji { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
+.phoneme-tips-card .tip-label {
+  font-size: 12px;
+  color: var(--text-light);
+  font-weight: 700;
+  flex-shrink: 0;
+  width: 36px;
+  padding-top: 2px;
+}
+.phoneme-tips-card .tip-content {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 600;
+  line-height: 1.5;
+  flex: 1;
+}
+.phoneme-tips-card .tip-warn .tip-content { color: #E74C3C; }
+.pq-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pq-card:active { transform: scale(0.95); }
 .phoneme-detail .example-word {
   background: #fff;
   border-radius: 20px;
@@ -2806,6 +2849,80 @@ var PHONEME_EXTRA = {
   "tʃ": { words: [{w:"chair",zh:"椅子"}], conf: ["ʃ","dʒ"] },
   "dʒ": { words: [{w:"juice",zh:"果汁"}], conf: ["tʃ","ʒ"] }
 };
+
+// ===== 音标发音技巧（口型+舌位+助记+易错）=====
+var PHONEME_TIPS = {
+  "æ":   { mouth:"嘴巴张大，上下齿分开", tongue:"舌头放平，舌尖轻抵下齿", tip:"像咬一口大苹果，嘴巴张最大", warn:"不要读成/e/，嘴巴要再张大一点" },
+  "e":   { mouth:"嘴巴半开，嘴角微咧", tongue:"舌头前部抬起，舌尖抵下齿", tip:"像说'哎'，嘴巴扁扁的", warn:"不要读成/æ/，嘴巴不要张太大" },
+  "ɪ":   { mouth:"嘴巴微开，嘴角放松", tongue:"舌头前部抬起，比/iː/低", tip:"短促的'一'，像被戳了一下", warn:"不要读成/iː/，要短而快" },
+  "ʌ":   { mouth:"嘴巴半开，放松", tongue:"舌头放平，中部微抬", tip:"像被打了一拳'啊'，短而有力", warn:"不要读成/ɑː/，要短" },
+  "ʊ":   { mouth:"嘴巴收圆，微开", tongue:"舌头后部抬起，放松", tip:"像吹蜡烛'乌'，短而轻", warn:"不要读成/uː/，要短" },
+  "ə":   { mouth:"嘴巴自然微开", tongue:"舌头完全放松，平放", tip:"最放松的音，像叹气'呃'", warn:"不要用力，轻轻带过就好" },
+  "iː":  { mouth:"嘴巴咧开，像微笑", tongue:"舌头前部高高抬起", tip:"拉长的'一'，像小蜜蜂嗡嗡", warn:"要拉长，不要读成短音/ɪ/" },
+  "ɑː":  { mouth:"嘴巴大张，放松", tongue:"舌头放平，后部微抬", tip:"像看医生说'啊'，拉长音", warn:"嘴巴要张大，不要读成/ʌ/" },
+  "ɔː":  { mouth:"嘴巴收圆，向前突出", tongue:"舌头后部抬起", tip:"像说'哦'，嘴巴圆圆拉长", warn:"嘴巴要收圆，不要读成/ɒ/" },
+  "uː":  { mouth:"嘴巴收圆，向前噘起", tongue:"舌头后部高高抬起", tip:"像吹口哨'乌'，拉长音", warn:"嘴巴要噘起来，不要读成/ʊ/" },
+  "ɜːr": { mouth:"嘴巴半开，舌头卷起", tongue:"舌头中部抬起，舌尖向后卷", tip:"像'儿'化音，舌头卷起来", warn:"舌头要卷，不要读成/ə/" },
+  "ɚ":   { mouth:"嘴巴放松微开", tongue:"舌头轻轻卷起", tip:"词尾的轻'儿'音，轻轻带过", warn:"不要重读，轻轻卷舌就好" },
+  "eɪ":  { mouth:"从/e/滑到/ɪ/，嘴角咧开", tongue:"舌头从前部高滑向更高", tip:"像说'诶'，从大到小滑过去", warn:"是滑动的音，不是单音" },
+  "aɪ":  { mouth:"从/ɑ/滑到/ɪ/，嘴巴从大到小", tongue:"舌头从低滑到高", tip:"像说'爱'，啊→一滑过去", warn:"要滑到位，不要只读一半" },
+  "aʊ":  { mouth:"从/ɑ/滑到/ʊ/，嘴巴从大到圆", tongue:"舌头从低滑到后高", tip:"像说'奥'，啊→乌滑过去", warn:"嘴巴要收圆，不要只读'啊'" },
+  "oʊ":  { mouth:"从/ə/滑到/ʊ/，嘴巴从开到圆", tongue:"舌头从中滑到后高", tip:"像说'欧'，呃→乌滑过去", warn:"是滑动的，不是单音'哦'" },
+  "ɔɪ":  { mouth:"从/ɔ/滑到/ɪ/，嘴巴从圆到扁", tongue:"舌头从后高滑到前高", tip:"像说'哦一'，圆→扁滑过去", warn:"两个音都要读到" },
+  "juː": { mouth:"从/j/滑到/uː/，嘴巴快速收圆", tongue:"舌头从前滑到后高", tip:"像说'又'，一→乌快速滑", warn:"不要漏掉前面的/j/" },
+  "p":   { mouth:"双唇紧闭，然后突然张开", tongue:"舌头放松", tip:"像吹蜡烛'扑'，不振动声带", warn:"是清辅音，不要振动嗓子读成/b/" },
+  "b":   { mouth:"双唇紧闭，然后突然张开", tongue:"舌头放松", tip:"像说'不'，振动声带", warn:"要振动嗓子，不要读成/p/" },
+  "t":   { mouth:"舌尖抵上齿龈，然后弹开", tongue:"舌尖紧抵上齿龈", tip:"像说'特'，舌尖弹一下", warn:"舌尖要抵上齿龈，不要抵牙齿" },
+  "d":   { mouth:"舌尖抵上齿龈，然后弹开", tongue:"舌尖紧抵上齿龈", tip:"像说'的'，振动声带", warn:"要振动嗓子，不要读成/t/" },
+  "k":   { mouth:"嘴巴微开，舌根抵软腭", tongue:"舌根抬起抵软腭", tip:"像说'可'，舌根弹一下", warn:"舌根要用力，不要读成/t/" },
+  "g":   { mouth:"嘴巴微开，舌根抵软腭", tongue:"舌根抬起抵软腭", tip:"像说'哥'，振动声带", warn:"要振动嗓子，不要读成/k/" },
+  "f":   { mouth:"上齿轻咬下唇", tongue:"舌头放松", tip:"像说'夫'，气流从唇齿间挤出", warn:"上齿要咬下唇，不要读成/p/" },
+  "v":   { mouth:"上齿轻咬下唇", tongue:"舌头放松", tip:"像说'屋'，振动声带", warn:"要振动嗓子，不要读成/f/" },
+  "θ":   { mouth:"舌尖轻放在上下齿之间", tongue:"舌尖伸出齿间", tip:"咬舌音，像说'思'但舌尖在齿间", warn:"一定要咬舌尖，不要读成/s/" },
+  "ð":   { mouth:"舌尖轻放在上下齿之间", tongue:"舌尖伸出齿间", tip:"咬舌音，像说'兹'但舌尖在齿间", warn:"要振动嗓子+咬舌尖，不要读成/z/" },
+  "s":   { mouth:"嘴巴微开，嘴角微咧", tongue:"舌尖接近上齿龈，气流从窄缝挤出", tip:"像蛇'嘶嘶'，气流从齿间挤出", warn:"不要咬舌，那是/θ/" },
+  "z":   { mouth:"嘴巴微开，嘴角微咧", tongue:"舌尖接近上齿龈", tip:"像蜜蜂'嗡嗡'，振动声带", warn:"要振动嗓子，不要读成/s/" },
+  "ʃ":   { mouth:"嘴巴微开，嘴唇收圆向前", tongue:"舌头前部抬起，靠近硬腭", tip:"像说'嘘'，嘴唇收圆", warn:"嘴唇要收圆，不要读成/s/" },
+  "ʒ":   { mouth:"嘴巴微开，嘴唇收圆", tongue:"舌头前部抬起", tip:"像说'日'，振动声带", warn:"要振动嗓子，不要读成/ʃ/" },
+  "h":   { mouth:"嘴巴自然张开", tongue:"舌头放松", tip:"像哈气'喝'，气流从喉咙出来", warn:"轻轻哈气，不要用力" },
+  "m":   { mouth:"双唇紧闭", tongue:"舌头放松", tip:"像说'嗯'，气流从鼻子出来", warn:"嘴巴要闭紧，用鼻子发音" },
+  "n":   { mouth:"嘴巴微开，舌尖抵上齿龈", tongue:"舌尖抵上齿龈", tip:"像说'嗯'，舌尖抵上齿龈", warn:"舌尖要抵上齿龈，用鼻子发音" },
+  "ŋ":   { mouth:"嘴巴微开，舌根抵软腭", tongue:"舌根抬起抵软腭", tip:"像唱歌'嗯'，舌根抬起", warn:"舌根要抬起，用鼻子发音，不要读成/n/" },
+  "l":   { mouth:"嘴巴微开", tongue:"舌尖抵上齿龈，气流从舌两侧出", tip:"像说'了'，舌尖抵上齿龈", warn:"舌尖要抵上齿龈，不要读成/r/" },
+  "r":   { mouth:"嘴巴微开，嘴唇收圆", tongue:"舌头向后卷，不抵任何部位", tip:"像说'日'，舌头卷起来不碰", warn:"舌头要卷，不要抵上齿龈（那是/l/）" },
+  "w":   { mouth:"嘴巴收圆向前噘起", tongue:"舌头后部抬起", tip:"像说'屋'，嘴巴收圆快速滑开", warn:"嘴巴要先收圆，不要读成/v/" },
+  "j":   { mouth:"嘴巴微开，嘴角咧开", tongue:"舌头前部高高抬起", tip:"像说'一'，然后快速滑到后面的元音", warn:"是半元音，要快速滑过去" },
+  "tʃ":  { mouth:"舌尖抵上齿龈，嘴唇收圆，然后弹开", tongue:"舌尖抵上齿龈", tip:"像说'吃'，舌尖弹一下+嘴唇收圆", warn:"嘴唇要收圆，不要读成/ʃ/" },
+  "dʒ":  { mouth:"舌尖抵上齿龈，嘴唇收圆，然后弹开", tongue:"舌尖抵上齿龈", tip:"像说'知'，振动声带", warn:"要振动嗓子，不要读成/tʃ/" }
+};
+
+// ===== 最小对立对（Minimal Pairs）辨音练习 =====
+var MINIMAL_PAIRS = [
+  { ipa1:"iː", ipa2:"ɪ",  word1:"sheep", word2:"ship",  zh1:"绵羊", zh2:"轮船" },
+  { ipa1:"æ",  ipa2:"e",  word1:"cat",   word2:"ket",   zh1:"猫",   zh2:"ket（对照）" },
+  { ipa1:"ʌ",  ipa2:"ɒ",  word1:"cup",   word2:"cop",   zh1:"杯子", zh2:"警察" },
+  { ipa1:"uː", ipa2:"ʊ",  word1:"pool",  word2:"pull",  zh1:"泳池", zh2:"拉" },
+  { ipa1:"ɜːr",ipa2:"ə",  word1:"bird",  word2:"bud",   zh1:"鸟",   zh2:"芽" },
+  { ipa1:"eɪ", ipa2:"æ",  word1:"cake",  word2:"cat",   zh1:"蛋糕", zh2:"猫" },
+  { ipa1:"aɪ", ipa2:"eɪ", word1:"five",  word2:"face",  zh1:"五",   zh2:"脸" },
+  { ipa1:"oʊ", ipa2:"ɔː", word1:"boat",  word2:"bought",zh1:"小船", zh2:"买（过去式）" },
+  { ipa1:"p",  ipa2:"b",  word1:"pin",   word2:"bin",   zh1:"别针", zh2:"箱子" },
+  { ipa1:"t",  ipa2:"d",  word1:"ten",   word2:"den",   zh1:"十",   zh2:"洞穴" },
+  { ipa1:"k",  ipa2:"g",  word1:"coat",  word2:"goat",  zh1:"外套", zh2:"山羊" },
+  { ipa1:"f",  ipa2:"v",  word1:"fan",   word2:"van",   zh1:"风扇", zh2:"面包车" },
+  { ipa1:"s",  ipa2:"z",  word1:"sip",   word2:"zip",   zh1:"啜饮", zh2:"拉链" },
+  { ipa1:"s",  ipa2:"ʃ",  word1:"sue",   word2:"shoe",  zh1:"起诉", zh2:"鞋子" },
+  { ipa1:"θ",  ipa2:"s",  word1:"think", word2:"sink",  zh1:"想",   zh2:"下沉" },
+  { ipa1:"ð",  ipa2:"z",  word1:"this",  word2:"zis",   zh1:"这个", zh2:"zis（对照）" },
+  { ipa1:"tʃ", ipa2:"ʃ",  word1:"chair", word2:"share", zh1:"椅子", zh2:"分享" },
+  { ipa1:"dʒ", ipa2:"ʒ",  word1:"gin",   word2:"zhin",  zh1:"杜松子酒", zh2:"zhin（对照）" },
+  { ipa1:"l",  ipa2:"r",  word1:"light", word2:"right", zh1:"灯",   zh2:"右边" },
+  { ipa1:"n",  ipa2:"ŋ",  word1:"sin",   word2:"sing",  zh1:"罪",   zh2:"唱歌" },
+  { ipa1:"m",  ipa2:"n",  word1:"map",   word2:"nap",   zh1:"地图", zh2:"小睡" },
+  { ipa1:"w",  ipa2:"v",  word1:"west",  word2:"vest",  zh1:"西方", zh2:"背心" },
+  { ipa1:"j",  ipa2:"iː", word1:"yes",   word2:"ease",  zh1:"是的", zh2:"轻松" },
+  { ipa1:"aʊ", ipa2:"oʊ", word1:"house", word2:"horse", zh1:"房子", zh2:"马" },
+];
 
 // 播放真人发音MP3（通用，带缓存）
 var realAudio = null;
@@ -3793,6 +3910,7 @@ let state = {
   customTopicDate: null,
   wordLearnLog: {}, // { word: { firstLearn: ts, reviewCount: n, nextReview: ts } }
   lastReviewDate: null,
+  phonemeMastery: {}, // { ipa: 0-3 } 0=未学 1=刚学会 2=练习中 3=已掌握
 };
 
 function loadState() {
@@ -4220,7 +4338,7 @@ function updateNav() {
   var items = document.querySelectorAll('.nav-item');
   items.forEach(function(item) {
     var r = item.getAttribute('data-route');
-    if (r === currentRoute || (currentRoute === 'word-detail' && r === 'words') || (currentRoute === 'song-detail' && r === 'songs') || ((currentRoute === 'store' || currentRoute === 'parent' || currentRoute === 'phonemes' || currentRoute === 'phoneme-detail' || currentRoute === 'cvc-game') && r === 'home') || (currentRoute === 'cvc-game' && r === 'phonics')) {
+    if (r === currentRoute || (currentRoute === 'word-detail' && r === 'words') || (currentRoute === 'song-detail' && r === 'songs') || ((currentRoute === 'store' || currentRoute === 'parent' || currentRoute === 'phonemes' || currentRoute === 'phoneme-detail' || currentRoute === 'phoneme-quiz' || currentRoute === 'cvc-game') && r === 'home') || (currentRoute === 'cvc-game' && r === 'phonics') || (currentRoute === 'phoneme-quiz' && r === 'phonics')) {
       item.classList.add('active');
     } else {
       item.classList.remove('active');
@@ -4256,6 +4374,7 @@ function render() {
   else if (currentRoute === 'phonemes') renderPhonemes(app);
   else if (currentRoute === 'phoneme-detail') renderPhonemeDetail(app);
   else if (currentRoute === 'cvc-game') renderCVCGame(app);
+  else if (currentRoute === 'phoneme-quiz') renderPhonemeQuiz(app);
   else renderHome(app);
   // 页面转场动画
   app.classList.remove('page-fade');
@@ -6064,6 +6183,11 @@ function renderPhonemes(app) {
 
   var cardsHtml = list.map(function(p) {
     var isLearned = learned.indexOf(p.ipa) !== -1;
+    var m = state.phonemeMastery[p.ipa] || 0;
+    var mDots = '';
+    for (var di = 0; di < 3; di++) {
+      mDots += '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;margin:0 1px;background:' + (di < m ? '#2ECC71' : '#e0e0e0') + '"></span>';
+    }
     return '<div class="phoneme-card' + (isLearned ? ' learned' : '') + '" data-ipa="' + p.ipa + '">' +
       (isLearned ? '<div class="check-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>' : '') +
       '<button class="phoneme-sound-btn" data-ipa="' + p.ipa + '" aria-label="听音标发音">' +
@@ -6072,6 +6196,7 @@ function renderPhonemes(app) {
       '<div class="ipa" style="color:' + cat.color + '">/' + p.ipa + '/</div>' +
       renderPhonemeWordImg(p.word, 44) +
       '<div class="word-label">' + p.word + '</div>' +
+      '<div style="margin-top:2px">' + mDots + '</div>' +
     '</div>';
   }).join('');
 
@@ -6088,6 +6213,10 @@ function renderPhonemes(app) {
         '<div style="font-size:13px;font-weight:700;color:var(--text-light)">已学会 ' + learned.length + ' / ' + total + ' 个音标</div>' +
         '<div class="bar"><div class="fill" style="width:' + pct + '%"></div></div>' +
       '</div>' +
+      '<button class="btn btn-purple" id="phmQuizEntry" style="width:100%;margin:12px 0 4px;font-size:15px;padding:14px;display:flex;align-items:center;justify-content:center;gap:8px">' +
+        '<span style="font-size:22px">🎯</span>' +
+        '辨音大挑战：听一听，选一选' +
+      '</button>' +
     '</div>' +
     '<div class="phoneme-tabs">' + tabsHtml + '</div>' +
     '<div style="padding:0 16px 12px;font-size:13px;color:var(--text-light);font-weight:600">' + cat.desc + '</div>' +
@@ -6095,6 +6224,11 @@ function renderPhonemes(app) {
     '<div style="height:20px"></div>';
 
   document.getElementById('phmBack').addEventListener('click', function() { navigate('home'); });
+
+  document.getElementById('phmQuizEntry').addEventListener('click', function() {
+    sfxClick();
+    navigate('phoneme-quiz');
+  });
 
   document.querySelectorAll('.phoneme-tab').forEach(function(tab) {
     tab.addEventListener('click', function() {
@@ -6134,6 +6268,10 @@ function renderPhonemeDetail(app) {
   var wordZh = wordObj ? wordObj.zh : (p.wordZh || p.word);
 
   var extra = PHONEME_EXTRA[p.ipa] || { words: [], conf: [] };
+  var tips = PHONEME_TIPS[p.ipa] || { mouth:"", tongue:"", tip:p.tip || "", warn:"" };
+  var mastery = state.phonemeMastery[p.ipa] || 0;
+  var masteryLabel = ["还没学","刚学会","练习中","已掌握"][mastery];
+  var masteryColor = ["#ccc","#FFD93D","#FF9F43","#2ECC71"][mastery];
   var extraWordsHtml = extra.words.map(function(w) {
     var wimg = findWordImg(w.w);
     var imgh = wimg ? '<img src="' + wimg + '" style="width:34px;height:34px;border-radius:8px;object-fit:cover" alt="' + w.w + '">' : '';
@@ -6157,12 +6295,14 @@ function renderPhonemeDetail(app) {
           '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>' +
         '</span>' +
       '</div>' +
-      '<div class="ipa-name">' + p.name + '</div>' +
-      '<div class="mouth-tip">' +
-        '<div class="tip-icon">' +
-          '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F39C12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>' +
-        '</div>' +
-        '<div class="tip-text">' + p.tip + '</div>' +
+      '<div class="ipa-name">' + p.name +
+        '<span style="display:inline-block;margin-left:8px;padding:2px 10px;border-radius:10px;font-size:12px;background:' + masteryColor + '22;color:' + masteryColor + ';font-weight:600">' + masteryLabel + '</span>' +
+      '</div>' +
+      '<div class="phoneme-tips-card">' +
+        '<div class="tip-row"><span class="tip-emoji">👄</span><span class="tip-label">口型</span><span class="tip-content">' + tips.mouth + '</span></div>' +
+        '<div class="tip-row"><span class="tip-emoji">👅</span><span class="tip-label">舌头</span><span class="tip-content">' + tips.tongue + '</span></div>' +
+        '<div class="tip-row"><span class="tip-emoji">💡</span><span class="tip-label">助记</span><span class="tip-content">' + tips.tip + '</span></div>' +
+        (tips.warn ? '<div class="tip-row tip-warn"><span class="tip-emoji">⚠️</span><span class="tip-label">易错</span><span class="tip-content">' + tips.warn + '</span></div>' : '') +
       '</div>' +
       '<div class="example-label">例词（听听这个音在单词里）</div>' +
       '<div class="example-word">' +
@@ -6316,16 +6456,198 @@ function renderPhonemeDetail(app) {
     if (lp.indexOf(p.ipa) === -1) {
       lp.push(p.ipa);
       state.learnedPhonemes = lp;
-      saveState();
-      sfxStar();
-      speak(randomItem(PRAISE_CORRECT), { rate: 0.9, pitch: 1.2 });
-      document.getElementById('phmLearn').textContent = '已学会';
-      document.getElementById('phmLearn').style.background = 'var(--green)';
-      // 庆祝动画
-      launchConfetti();
-    } else {
+    }
+    // 更新掌握度：至少到1（刚学会），如果已经是1则升到2（练习中）
+    var cur = state.phonemeMastery[p.ipa] || 0;
+    if (cur < 1) { state.phonemeMastery[p.ipa] = 1; }
+    else if (cur === 1) { state.phonemeMastery[p.ipa] = 2; }
+    saveState();
+    sfxStar();
+    speak(randomItem(PRAISE_CORRECT), { rate: 0.9, pitch: 1.2 });
+    var newMastery = state.phonemeMastery[p.ipa];
+    var labels = ["还没学","刚学会","练习中","已掌握"];
+    document.getElementById('phmLearn').textContent = '已学会 ✓';
+    document.getElementById('phmLearn').style.background = 'var(--green)';
+    launchConfetti();
+    // 提示掌握度
+    setTimeout(function() {
+      speakZh('太棒了！这个音标现在是「' + labels[newMastery] + '」，多练习几次就能完全掌握啦！');
+    }, 800);
+  });
+}
+
+// ===== 最小对立对辨音大挑战 =====
+var phonemeQuizState = { questions: [], idx: 0, correct: 0, answered: false };
+
+function renderPhonemeQuiz(app) {
+  // 初始化题目：随机选8组对立对
+  if (!phonemeQuizState.questions.length || phonemeQuizState.idx >= phonemeQuizState.questions.length) {
+    var shuffled = MINIMAL_PAIRS.slice();
+    for (var i = shuffled.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
+    }
+    phonemeQuizState.questions = shuffled.slice(0, 8);
+    phonemeQuizState.idx = 0;
+    phonemeQuizState.correct = 0;
+  }
+
+  var q = phonemeQuizState.questions[phonemeQuizState.idx];
+  var total = phonemeQuizState.questions.length;
+  var pct = Math.round(phonemeQuizState.idx / total * 100);
+
+  // 随机决定哪个是正确答案
+  var swap = Math.random() > 0.5;
+  var left = swap ? q.word2 : q.word1;
+  var right = swap ? q.word1 : q.word2;
+  var leftIpa = swap ? q.ipa2 : q.ipa1;
+  var rightIpa = swap ? q.ipa1 : q.ipa2;
+  var leftZh = swap ? q.zh2 : q.zh1;
+  var rightZh = swap ? q.zh1 : q.zh2;
+  var answer = swap ? q.word2 : q.word1;
+
+  app.innerHTML =
+    '<div class="page-header">' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
+        '<button class="back-btn" id="pqBack">' +
+          '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>' +
+        '</button>' +
+      '</div>' +
+      '<div class="page-title">辨音大挑战</div>' +
+      '<div class="page-sub">听一听，点出你听到的单词</div>' +
+      '<div class="phoneme-progress">' +
+        '<div style="font-size:13px;font-weight:700;color:var(--text-light)">第 ' + (phonemeQuizState.idx + 1) + ' / ' + total + ' 题 · 答对 ' + phonemeQuizState.correct + ' 题</div>' +
+        '<div class="bar"><div class="fill" style="width:' + pct + '%"></div></div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="padding:0 16px">' +
+      '<div style="text-align:center;margin:16px 0 8px">' +
+        '<button class="btn btn-primary" id="pqPlay" style="padding:16px 32px;font-size:18px;border-radius:20px">' +
+          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-5px;margin-right:6px"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
+          '点我听一听' +
+        '</button>' +
+      '</div>' +
+      '<div style="font-size:13px;color:var(--text-light);text-align:center;margin-bottom:16px;font-weight:600">👆 先点上面的按钮听发音，再点下面的卡片</div>' +
+      '<div style="display:flex;gap:12px;margin-bottom:16px">' +
+        '<div class="pq-card" data-word="' + left + '" style="flex:1">' +
+          renderPhonemeWordImg(left, 72) +
+          '<div style="font-size:20px;font-weight:700;color:var(--text);margin-top:8px;font-family:Fredoka">' + left + '</div>' +
+          '<div style="font-size:13px;color:var(--text-light);font-weight:600">/' + leftIpa + '/</div>' +
+          '<div style="font-size:12px;color:var(--text-light)">' + leftZh + '</div>' +
+        '</div>' +
+        '<div class="pq-card" data-word="' + right + '" style="flex:1">' +
+          renderPhonemeWordImg(right, 72) +
+          '<div style="font-size:20px;font-weight:700;color:var(--text);margin-top:8px;font-family:Fredoka">' + right + '</div>' +
+          '<div style="font-size:13px;color:var(--text-light);font-weight:600">/' + rightIpa + '/</div>' +
+          '<div style="font-size:12px;color:var(--text-light)">' + rightZh + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="pqResult" style="text-align:center;min-height:40px"></div>' +
+      '<div style="display:flex;gap:10px;margin-top:8px">' +
+        '<button class="btn btn-secondary" id="pqReplay" style="flex:1">🔁 再听一遍</button>' +
+        '<button class="btn btn-primary" id="pqNext" style="flex:1;display:none">下一题 →</button>' +
+      '</div>' +
+    '</div>';
+
+  phonemeQuizState.answered = false;
+
+  document.getElementById('pqBack').addEventListener('click', function() {
+    phonemeQuizState.questions = [];
+    navigate('phonemes');
+  });
+
+  function playQuestion() {
+    sfxClick();
+    speakWord(answer, { onEnd: function() {} });
+  }
+
+  document.getElementById('pqPlay').addEventListener('click', playQuestion);
+  document.getElementById('pqReplay').addEventListener('click', playQuestion);
+
+  document.querySelectorAll('.pq-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      if (phonemeQuizState.answered) return;
+      phonemeQuizState.answered = true;
       sfxClick();
-      speakZh('这个音标已经学会啦！');
+      var chosen = card.getAttribute('data-word');
+      var resultEl = document.getElementById('pqResult');
+      var nextBtn = document.getElementById('pqNext');
+      if (chosen === answer) {
+        phonemeQuizState.correct++;
+        card.style.background = '#d4edda';
+        card.style.borderColor = '#2ECC71';
+        resultEl.innerHTML = '<div style="color:#2ECC71;font-size:18px;font-weight:700">🎉 答对啦！太棒了！</div>';
+        sfxStar();
+        speak(randomItem(PRAISE_CORRECT), { rate: 0.9, pitch: 1.2 });
+        launchConfetti();
+        // 提升相关音标掌握度
+        [q.ipa1, q.ipa2].forEach(function(ipa) {
+          var cur = state.phonemeMastery[ipa] || 0;
+          if (cur < 3) { state.phonemeMastery[ipa] = Math.min(3, cur + 1); }
+        });
+        saveState();
+      } else {
+        card.style.background = '#f8d7da';
+        card.style.borderColor = '#E74C3C';
+        // 高亮正确答案
+        document.querySelectorAll('.pq-card').forEach(function(c) {
+          if (c.getAttribute('data-word') === answer) {
+            c.style.background = '#d4edda';
+            c.style.borderColor = '#2ECC71';
+          }
+        });
+        resultEl.innerHTML = '<div style="color:#E74C3C;font-size:16px;font-weight:700">😊 再听一遍试试吧！正确答案是 ' + answer + '</div>';
+        speakZh('没关系，再听一遍试试！正确答案是' + answer);
+        // 答错可以重选
+        phonemeQuizState.answered = false;
+        setTimeout(function() {
+          document.querySelectorAll('.pq-card').forEach(function(c) {
+            c.style.background = '';
+            c.style.borderColor = '';
+          });
+          resultEl.innerHTML = '';
+        }, 2500);
+        return;
+      }
+      nextBtn.style.display = 'block';
+    });
+  });
+
+  document.getElementById('pqNext').addEventListener('click', function() {
+    sfxClick();
+    phonemeQuizState.idx++;
+    if (phonemeQuizState.idx >= phonemeQuizState.questions.length) {
+      // 完成
+      var score = phonemeQuizState.correct;
+      var totalQ = phonemeQuizState.questions.length;
+      app.innerHTML =
+        '<div class="page-header">' +
+          '<div class="page-title">挑战完成！</div>' +
+        '</div>' +
+        '<div style="text-align:center;padding:20px">' +
+          '<div style="font-size:64px;margin-bottom:12px">' + (score >= 6 ? '🏆' : score >= 4 ? '⭐' : '💪') + '</div>' +
+          '<div style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:8px">答对 ' + score + ' / ' + totalQ + ' 题</div>' +
+          '<div style="font-size:16px;color:var(--text-light);margin-bottom:20px;font-weight:600">' +
+            (score >= 6 ? '太厉害了！你的耳朵真灵敏！' : score >= 4 ? '不错哦！继续练习会更棒！' : '加油！多听几遍就能分清啦！') +
+          '</div>' +
+          '<div style="display:flex;gap:10px">' +
+            '<button class="btn btn-primary" id="pqAgain" style="flex:1">🔄 再来一轮</button>' +
+            '<button class="btn btn-secondary" id="pqBack2" style="flex:1">返回音标</button>' +
+          '</div>' +
+        '</div>';
+      if (score >= 4) { sfxStar(); launchConfetti(); }
+      document.getElementById('pqAgain').addEventListener('click', function() {
+        phonemeQuizState.questions = [];
+        phonemeQuizState.idx = 0;
+        phonemeQuizState.correct = 0;
+        renderPhonemeQuiz(app);
+      });
+      document.getElementById('pqBack2').addEventListener('click', function() {
+        phonemeQuizState.questions = [];
+        navigate('phonemes');
+      });
+    } else {
+      renderPhonemeQuiz(app);
     }
   });
 }
