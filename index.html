@@ -2969,6 +2969,87 @@ Object.keys(PHONEMES).forEach(function(cat) {
   });
 });
 
+// ===== 音标标准发音截取：从标准单词发音中精确截取音标本尊片段 =====
+// 用有道词典美式发音，Web Audio API 截取目标音素的时间段
+var PHONEME_CLIP_MAP = {
+  // 短元音
+  "æ": {word: "apple", start: 0, dur: 0.35},
+  "e": {word: "egg", start: 0, dur: 0.3},
+  "ɪ": {word: "fish", start: 0.12, dur: 0.3},
+  "ʌ": {word: "cup", start: 0.1, dur: 0.3},
+  "ʊ": {word: "book", start: 0.1, dur: 0.3},
+  "ə": {word: "banana", start: 0.18, dur: 0.28},
+  // 长元音
+  "iː": {word: "see", start: 0.12, dur: 0.5},
+  "ɑː": {word: "car", start: 0.12, dur: 0.5},
+  "ɔː": {word: "four", start: 0.1, dur: 0.5},
+  "uː": {word: "blue", start: 0.12, dur: 0.5},
+  "ɜːr": {word: "bird", start: 0.1, dur: 0.5},
+  "ɚ": {word: "mother", start: 0.38, dur: 0.4},
+  // 双元音
+  "eɪ": {word: "day", start: 0.1, dur: 0.4},
+  "aɪ": {word: "my", start: 0.1, dur: 0.4},
+  "aʊ": {word: "cow", start: 0.1, dur: 0.4},
+  "oʊ": {word: "go", start: 0.1, dur: 0.4},
+  "ɔɪ": {word: "boy", start: 0.1, dur: 0.4},
+  "juː": {word: "you", start: 0, dur: 0.5},
+  // 爆破辅音
+  "p": {word: "pig", start: 0, dur: 0.2},
+  "b": {word: "boy", start: 0, dur: 0.2},
+  "t": {word: "ten", start: 0, dur: 0.2},
+  "d": {word: "dog", start: 0, dur: 0.2},
+  "k": {word: "cat", start: 0, dur: 0.2},
+  "g": {word: "girl", start: 0, dur: 0.2},
+  // 摩擦辅音
+  "f": {word: "fish", start: 0, dur: 0.3},
+  "v": {word: "van", start: 0, dur: 0.3},
+  "θ": {word: "three", start: 0, dur: 0.3},
+  "ð": {word: "this", start: 0, dur: 0.3},
+  "s": {word: "sun", start: 0, dur: 0.3},
+  "z": {word: "zebra", start: 0, dur: 0.3},
+  "ʃ": {word: "ship", start: 0, dur: 0.3},
+  "ʒ": {word: "pleasure", start: 0.15, dur: 0.3},
+  // 其他辅音
+  "h": {word: "hat", start: 0, dur: 0.2},
+  "m": {word: "mother", start: 0, dur: 0.3},
+  "n": {word: "nine", start: 0, dur: 0.3},
+  "ŋ": {word: "ring", start: 0.3, dur: 0.4},
+  "l": {word: "lion", start: 0, dur: 0.3},
+  "r": {word: "rice", start: 0, dur: 0.3},
+  "w": {word: "water", start: 0, dur: 0.3},
+  "j": {word: "yes", start: 0, dur: 0.3},
+  "tʃ": {word: "chair", start: 0, dur: 0.3},
+  "dʒ": {word: "juice", start: 0, dur: 0.3},
+};
+
+var _phonemeClipCache = {};
+function playPhonemeClip(clip) {
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var url = 'audio/words/' + clip.word + '.mp3';
+  if (_phonemeClipCache[url]) {
+    var src = ctx.createBufferSource();
+    src.buffer = _phonemeClipCache[url];
+    src.connect(ctx.destination);
+    try { src.start(0, clip.start, clip.dur); } catch(e) { src.start(0); }
+    return;
+  }
+  fetch(url)
+    .then(function(resp) { return resp.arrayBuffer(); })
+    .then(function(buf) { return ctx.decodeAudioData(buf); })
+    .then(function(audioBuf) {
+      _phonemeClipCache[url] = audioBuf;
+      var src = ctx.createBufferSource();
+      src.buffer = audioBuf;
+      src.connect(ctx.destination);
+      try { src.start(0, clip.start, clip.dur); } catch(e) { src.start(0); }
+    })
+    .catch(function() {
+      // 截取失败，回退播放整个单词
+      playRealAudio(url);
+    });
+}
+
 // ===== 音标更多例词 + 辨音挑战混淆对 =====
 var PHONEME_EXTRA = {
   "æ": { words: [{w:"cat",zh:"猫"},{w:"black",zh:"黑色"}], conf: ["e","ʌ"] },
@@ -3119,6 +3200,8 @@ function preloadAudio(url) {
 
 // 播放音标本尊：优先AI真人纯音，回退例词MP3，再回退合成器
 function playPhonemePure(p) {
+  // 优先：从标准单词发音中精确截取音标本尊片段
+  if (PHONEME_CLIP_MAP[p.ipa]) { playPhonemeClip(PHONEME_CLIP_MAP[p.ipa]); return; }
   if (p.sound) { playRealAudio(p.sound); return; }
   if (p.audio) { playRealAudio(p.audio); return; }
   playPhonemeSoundSynth(p);
